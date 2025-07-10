@@ -436,12 +436,22 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {popularInTier.map((token) => (
-                        <div key={token.id} className={`p-3 rounded-lg ${config.bgColor} ${config.borderColor} border`}>
+                        <div key={token.id} className={`p-3 rounded-lg ${config.bgColor} ${config.borderColor} border cursor-pointer hover:bg-opacity-80 transition-all`} onClick={() => setSelectedToken(token)}>
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-bold text-white">{token.symbol}</span>
-                            <span className={`text-sm ${token.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                              {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm ${token.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
+                              </span>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => toggleFavorite(token, e)}
+                                className={`p-1 h-6 w-6 ${favoriteIds.has(token.id) ? 'text-yellow-400 hover:text-yellow-300' : 'text-slate-400 hover:text-yellow-400'}`}
+                              >
+                                <Star className={`h-3 w-3 ${favoriteIds.has(token.id) ? 'fill-current' : ''}`} />
+                              </Button>
+                            </div>
                           </div>
                           <p className="text-sm text-slate-400 mb-1">{token.name}</p>
                           <p className="text-white font-medium">{formatPrice(token.price)}</p>
@@ -490,8 +500,18 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
                         <p className="text-sm text-slate-400 mb-1">Top Performers</p>
                         <div className="space-y-1">
                           {stat.topPerformers.map((token) => (
-                            <div key={token.id} className="flex items-center justify-between text-sm">
-                              <span className="text-white">{token.symbol}</span>
+                            <div key={token.id} className="flex items-center justify-between text-sm hover:bg-slate-800/50 p-2 rounded cursor-pointer" onClick={() => setSelectedToken(token)}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-white">{token.symbol}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={(e) => toggleFavorite(token, e)}
+                                  className={`p-1 h-5 w-5 ${favoriteIds.has(token.id) ? 'text-yellow-400 hover:text-yellow-300' : 'text-slate-400 hover:text-yellow-400'}`}
+                                >
+                                  <Star className={`h-3 w-3 ${favoriteIds.has(token.id) ? 'fill-current' : ''}`} />
+                                </Button>
+                              </div>
                               <span className={`${token.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
                               </span>

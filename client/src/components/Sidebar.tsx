@@ -63,6 +63,27 @@ export default function Sidebar({ cryptocurrencies, expandedTiers, onToggleTier 
     return acc;
   }, {} as Record<string, Cryptocurrency[]>);
 
+  const getHoverClasses = (tier: string) => {
+    const baseClasses = "w-full flex items-center justify-between p-3 rounded-lg bg-gradient-to-r text-white transition-all duration-200 hover:scale-105 hover:shadow-lg";
+    
+    switch (tier) {
+      case 'mega':
+        return `${baseClasses} from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800`;
+      case 'large':
+        return `${baseClasses} from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800`;
+      case 'largeMedium':
+        return `${baseClasses} from-green-600 to-green-700 hover:from-green-700 hover:to-green-800`;
+      case 'smallMedium':
+        return `${baseClasses} from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800`;
+      case 'small':
+        return `${baseClasses} from-red-600 to-red-700 hover:from-red-700 hover:to-red-800`;
+      case 'micro':
+        return `${baseClasses} from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800`;
+      default:
+        return `${baseClasses} from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800`;
+    }
+  };
+
   const renderTierSection = (tier: string) => {
     const config = tierConfig[tier as keyof typeof tierConfig];
     if (!config) return null;
@@ -75,7 +96,7 @@ export default function Sidebar({ cryptocurrencies, expandedTiers, onToggleTier 
       <div key={tier} className="mb-4">
         <button
           onClick={() => onToggleTier(tier)}
-          className={`w-full flex items-center justify-between p-3 rounded-lg bg-gradient-to-r ${config.gradient} hover:bg-gradient-to-r hover:${config.hoverGradient} text-white transition-all duration-200`}
+          className={getHoverClasses(tier)}
         >
           <div className="flex items-center space-x-3">
             <Icon className="h-5 w-5 text-yellow-400" />
