@@ -330,7 +330,7 @@ export class MemStorage implements IStorage {
         ...existing,
         ...cryptocurrency,
         lastUpdated: new Date(),
-        marketCapRank: cryptocurrency.marketCapRank || existing.marketCapRank,
+        marketCapRank: cryptocurrency.marketCapRank ?? existing.marketCapRank,
       };
       this.cryptocurrencies.set(existing.id, updated);
       return updated;

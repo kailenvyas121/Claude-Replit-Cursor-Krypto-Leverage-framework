@@ -9,6 +9,9 @@ import DistributionChart from "./charts/DistributionChart";
 import PerformanceChart from "./charts/PerformanceChart";
 import CorrelationChart from "./charts/CorrelationChart";
 import TierAnalysisChart from "./charts/TierAnalysisChart";
+import LeverageOpportunityChart from "./charts/LeverageOpportunityChart";
+import CascadeAnalysisChart from "./charts/CascadeAnalysisChart";
+import SmartAlertSystem from "./SmartAlertSystem";
 import OpportunityCard from "./OpportunityCard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -604,14 +607,95 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Complete Tier Performance Analysis</CardTitle>
+                <CardDescription className="text-slate-400">
+                  All 6 market cap tiers with real-time performance tracking
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TierAnalysisChart data={marketData?.cryptocurrencies || []} />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Market Cascade Analysis</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Predicting when smaller caps will follow larger cap movements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CascadeAnalysisChart data={marketData?.cryptocurrencies || []} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Risk vs Reward Matrix</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Expected returns plotted against risk scores for optimal leverage
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeverageOpportunityChart data={marketData?.cryptocurrencies || []} type="risk-reward" />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Volume Divergence Scanner</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Identifying unusual volume patterns that signal price movements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeverageOpportunityChart data={marketData?.cryptocurrencies || []} type="volume-divergence" />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Momentum Shift Detection</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Real-time tracking of momentum changes across all tiers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeverageOpportunityChart data={marketData?.cryptocurrencies || []} type="momentum-shift" />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Tier Correlation Breakdown</CardTitle>
+                <CardDescription className="text-slate-400">
+                  Cross-tier correlation analysis for identifying breakdown opportunities
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LeverageOpportunityChart data={marketData?.cryptocurrencies || []} type="correlation-breakdown" />
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
                 <CardHeader>
-                  <CardTitle className="text-white">Individual Tier Performance</CardTitle>
+                  <CardTitle className="text-white">Advanced Correlation Matrix</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Cross-tier correlation analysis for identifying breakdown opportunities
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <TierAnalysisChart data={marketData?.cryptocurrencies || []} />
+                  <CorrelationChart data={marketData?.correlations || []} />
                 </CardContent>
               </Card>
             </div>
@@ -758,7 +842,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
                   className="bg-cyan-600 hover:bg-cyan-700"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  RefreshCw Analysis
+                  Refresh Analysis
                 </Button>
               </CardTitle>
               <CardDescription className="text-slate-400">
@@ -767,14 +851,22 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
             </CardHeader>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {marketData?.opportunities?.map((opportunity: any) => (
-              <OpportunityCard key={opportunity.id} opportunity={opportunity} />
-            )) || (
-              <div className="col-span-2 flex items-center justify-center p-8 text-slate-400">
-                {isConnected ? "No opportunities available" : "Connect to see live opportunities"}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {marketData?.opportunities?.map((opportunity: any) => (
+                  <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                )) || (
+                  <div className="col-span-2 flex items-center justify-center p-8 text-slate-400">
+                    {isConnected ? "No opportunities available" : "Connect to see live opportunities"}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            
+            <div>
+              <SmartAlertSystem marketData={marketData} />
+            </div>
           </div>
         </TabsContent>
       </Tabs>
