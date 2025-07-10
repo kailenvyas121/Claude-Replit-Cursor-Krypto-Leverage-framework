@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useFavorites, useAddFavorite, useRemoveFavorite, useIsFavorite } from "../hooks/useFavorites";
 import TokenDetailModal from "./TokenDetailModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

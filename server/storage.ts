@@ -72,54 +72,54 @@ export class MemStorage implements IStorage {
     // Initialize with comprehensive demo cryptocurrency data
     const demoCoins = [
       // Mega Cap ($100B+)
-      { symbol: 'BTC', name: 'Bitcoin', price: 43250, marketCap: 847000000000, tier: 'mega', change: 2.1 },
-      { symbol: 'ETH', name: 'Ethereum', price: 2580, marketCap: 310000000000, tier: 'mega', change: 1.8 },
+      { symbol: 'BTC', name: 'Bitcoin', price: 96500, marketCap: 1900000000000, tier: 'mega', change: 2.1, deployedYear: 2009 },
+      { symbol: 'ETH', name: 'Ethereum', price: 3420, marketCap: 410000000000, tier: 'mega', change: 1.8, deployedYear: 2015 },
       
       // Large Cap ($10B-$100B)
-      { symbol: 'BNB', name: 'Binance Coin', price: 315, marketCap: 47000000000, tier: 'large', change: -0.5 },
-      { symbol: 'SOL', name: 'Solana', price: 105, marketCap: 46000000000, tier: 'large', change: 3.2 },
-      { symbol: 'XRP', name: 'Ripple', price: 0.62, marketCap: 34000000000, tier: 'large', change: -1.2 },
-      { symbol: 'ADA', name: 'Cardano', price: 0.48, marketCap: 17000000000, tier: 'large', change: 0.8 },
-      { symbol: 'AVAX', name: 'Avalanche', price: 38, marketCap: 15000000000, tier: 'large', change: 2.5 },
-      { symbol: 'DOT', name: 'Polkadot', price: 7.2, marketCap: 10500000000, tier: 'large', change: -2.1 },
+      { symbol: 'BNB', name: 'Binance Coin', price: 685, marketCap: 98000000000, tier: 'large', change: -0.5, deployedYear: 2017 },
+      { symbol: 'SOL', name: 'Solana', price: 185, marketCap: 85000000000, tier: 'large', change: 3.2, deployedYear: 2020 },
+      { symbol: 'XRP', name: 'Ripple', price: 2.42, marketCap: 136000000000, tier: 'large', change: -1.2, deployedYear: 2012 },
+      { symbol: 'ADA', name: 'Cardano', price: 1.08, marketCap: 38000000000, tier: 'large', change: 0.8, deployedYear: 2017 },
+      { symbol: 'AVAX', name: 'Avalanche', price: 42, marketCap: 18000000000, tier: 'large', change: 2.5, deployedYear: 2020 },
+      { symbol: 'DOT', name: 'Polkadot', price: 8.9, marketCap: 12500000000, tier: 'large', change: -2.1, deployedYear: 2020 },
       
       // Large Medium ($5B-$10B)
-      { symbol: 'MATIC', name: 'Polygon', price: 0.92, marketCap: 8500000000, tier: 'largeMedium', change: 1.5 },
-      { symbol: 'LINK', name: 'Chainlink', price: 15.8, marketCap: 8200000000, tier: 'largeMedium', change: 0.7 },
-      { symbol: 'UNI', name: 'Uniswap', price: 6.8, marketCap: 6800000000, tier: 'largeMedium', change: -0.9 },
-      { symbol: 'LTC', name: 'Litecoin', price: 72, marketCap: 5300000000, tier: 'largeMedium', change: 1.2 },
-      { symbol: 'ICP', name: 'Internet Computer', price: 12.5, marketCap: 5800000000, tier: 'largeMedium', change: 4.1 },
-      { symbol: 'APT', name: 'Aptos', price: 8.9, marketCap: 5200000000, tier: 'largeMedium', change: -1.8 },
+      { symbol: 'MATIC', name: 'Polygon', price: 0.52, marketCap: 5200000000, tier: 'largeMedium', change: 1.5, deployedYear: 2019 },
+      { symbol: 'LINK', name: 'Chainlink', price: 25.8, marketCap: 15200000000, tier: 'large', change: 0.7, deployedYear: 2017 },
+      { symbol: 'UNI', name: 'Uniswap', price: 15.8, marketCap: 9400000000, tier: 'largeMedium', change: -0.9, deployedYear: 2020 },
+      { symbol: 'LTC', name: 'Litecoin', price: 105, marketCap: 7800000000, tier: 'largeMedium', change: 1.2, deployedYear: 2011 },
+      { symbol: 'ICP', name: 'Internet Computer', price: 12.5, marketCap: 5800000000, tier: 'largeMedium', change: 4.1, deployedYear: 2021 },
+      { symbol: 'APT', name: 'Aptos', price: 9.4, marketCap: 5200000000, tier: 'largeMedium', change: -1.8, deployedYear: 2022 },
       
       // Small Medium ($1B-$5B)
-      { symbol: 'ATOM', name: 'Cosmos', price: 10.2, marketCap: 4000000000, tier: 'smallMedium', change: 2.8 },
-      { symbol: 'NEAR', name: 'NEAR Protocol', price: 3.5, marketCap: 3800000000, tier: 'smallMedium', change: 1.9 },
-      { symbol: 'FTM', name: 'Fantom', price: 0.45, marketCap: 1800000000, tier: 'smallMedium', change: -3.2 },
-      { symbol: 'ALGO', name: 'Algorand', price: 0.22, marketCap: 1700000000, tier: 'smallMedium', change: 0.5 },
-      { symbol: 'VET', name: 'VeChain', price: 0.028, marketCap: 2200000000, tier: 'smallMedium', change: 1.1 },
-      { symbol: 'FLOW', name: 'Flow', price: 0.78, marketCap: 1500000000, tier: 'smallMedium', change: -0.7 },
-      { symbol: 'HBAR', name: 'Hedera', price: 0.065, marketCap: 2400000000, tier: 'smallMedium', change: 2.3 },
-      { symbol: 'XTZ', name: 'Tezos', price: 0.95, marketCap: 1000000000, tier: 'smallMedium', change: -1.5 },
+      { symbol: 'ATOM', name: 'Cosmos', price: 10.2, marketCap: 4000000000, tier: 'smallMedium', change: 2.8, deployedYear: 2019 },
+      { symbol: 'NEAR', name: 'NEAR Protocol', price: 3.5, marketCap: 3800000000, tier: 'smallMedium', change: 1.9, deployedYear: 2021 },
+      { symbol: 'FTM', name: 'Fantom', price: 0.45, marketCap: 1800000000, tier: 'smallMedium', change: -3.2, deployedYear: 2018 },
+      { symbol: 'ALGO', name: 'Algorand', price: 0.22, marketCap: 1700000000, tier: 'smallMedium', change: 0.5, deployedYear: 2019 },
+      { symbol: 'VET', name: 'VeChain', price: 0.028, marketCap: 2200000000, tier: 'smallMedium', change: 1.1, deployedYear: 2018 },
+      { symbol: 'FLOW', name: 'Flow', price: 0.78, marketCap: 1500000000, tier: 'smallMedium', change: -0.7, deployedYear: 2020 },
+      { symbol: 'HBAR', name: 'Hedera', price: 0.065, marketCap: 2400000000, tier: 'smallMedium', change: 2.3, deployedYear: 2019 },
+      { symbol: 'XTZ', name: 'Tezos', price: 0.95, marketCap: 1000000000, tier: 'smallMedium', change: -1.5, deployedYear: 2018 },
       
       // Small Cap ($100M-$1B)
-      { symbol: 'ROSE', name: 'Oasis Network', price: 0.078, marketCap: 520000000, tier: 'small', change: 3.8 },
-      { symbol: 'KAVA', name: 'Kava', price: 0.95, marketCap: 480000000, tier: 'small', change: -2.1 },
-      { symbol: 'CELO', name: 'Celo', price: 0.62, marketCap: 320000000, tier: 'small', change: 1.7 },
-      { symbol: 'SKL', name: 'SKALE Network', price: 0.048, marketCap: 180000000, tier: 'small', change: 4.2 },
-      { symbol: 'BAND', name: 'Band Protocol', price: 1.25, marketCap: 250000000, tier: 'small', change: -1.9 },
-      { symbol: 'REN', name: 'Ren', price: 0.058, marketCap: 150000000, tier: 'small', change: 2.5 },
-      { symbol: 'KNC', name: 'Kyber Network', price: 0.72, marketCap: 140000000, tier: 'small', change: -0.8 },
-      { symbol: 'OCEAN', name: 'Ocean Protocol', price: 0.45, marketCap: 290000000, tier: 'small', change: 3.1 },
+      { symbol: 'ROSE', name: 'Oasis Network', price: 0.078, marketCap: 520000000, tier: 'small', change: 3.8, deployedYear: 2020 },
+      { symbol: 'KAVA', name: 'Kava', price: 0.95, marketCap: 480000000, tier: 'small', change: -2.1, deployedYear: 2019 },
+      { symbol: 'CELO', name: 'Celo', price: 0.62, marketCap: 320000000, tier: 'small', change: 1.7, deployedYear: 2020 },
+      { symbol: 'SKL', name: 'SKALE Network', price: 0.048, marketCap: 180000000, tier: 'small', change: 4.2, deployedYear: 2020 },
+      { symbol: 'BAND', name: 'Band Protocol', price: 1.25, marketCap: 250000000, tier: 'small', change: -1.9, deployedYear: 2019 },
+      { symbol: 'REN', name: 'Ren', price: 0.058, marketCap: 150000000, tier: 'small', change: 2.5, deployedYear: 2018 },
+      { symbol: 'KNC', name: 'Kyber Network', price: 0.72, marketCap: 140000000, tier: 'small', change: -0.8, deployedYear: 2017 },
+      { symbol: 'OCEAN', name: 'Ocean Protocol', price: 0.45, marketCap: 290000000, tier: 'small', change: 3.1, deployedYear: 2019 },
       
       // Micro Cap / Shit Coins ($10M-$100M)
-      { symbol: 'PEPE', name: 'Pepe', price: 0.00000125, marketCap: 52000000, tier: 'micro', change: 15.7 },
-      { symbol: 'FLOKI', name: 'Floki Inu', price: 0.000165, marketCap: 38000000, tier: 'micro', change: -8.2 },
-      { symbol: 'SHIB', name: 'Shiba Inu', price: 0.0000095, marketCap: 95000000, tier: 'micro', change: 22.1 },
-      { symbol: 'WOJAK', name: 'Wojak', price: 0.000028, marketCap: 28000000, tier: 'micro', change: -12.5 },
-      { symbol: 'DOGE2', name: 'Doge2.0', price: 0.0000045, marketCap: 18000000, tier: 'micro', change: 45.3 },
-      { symbol: 'MEME', name: 'Meme Coin', price: 0.000072, marketCap: 35000000, tier: 'micro', change: -18.7 },
-      { symbol: 'MOONBOY', name: 'MoonBoy', price: 0.000015, marketCap: 15000000, tier: 'micro', change: 67.9 },
-      { symbol: 'ROCKET', name: 'RocketCoin', price: 0.0000089, marketCap: 22000000, tier: 'micro', change: -25.4 },
+      { symbol: 'PEPE', name: 'Pepe', price: 0.00000185, marketCap: 78000000, tier: 'micro', change: 15.7, deployedYear: 2023 },
+      { symbol: 'FLOKI', name: 'Floki Inu', price: 0.000195, marketCap: 45000000, tier: 'micro', change: -8.2, deployedYear: 2021 },
+      { symbol: 'SHIB', name: 'Shiba Inu', price: 0.0000245, marketCap: 14500000000, tier: 'large', change: 22.1, deployedYear: 2020 },
+      { symbol: 'WOJAK', name: 'Wojak', price: 0.000038, marketCap: 38000000, tier: 'micro', change: -12.5, deployedYear: 2023 },
+      { symbol: 'DOGE2', name: 'Doge2.0', price: 0.0000065, marketCap: 26000000, tier: 'micro', change: 45.3, deployedYear: 2024 },
+      { symbol: 'MEME', name: 'Meme Coin', price: 0.000092, marketCap: 46000000, tier: 'micro', change: -18.7, deployedYear: 2023 },
+      { symbol: 'MOONBOY', name: 'MoonBoy', price: 0.000025, marketCap: 25000000, tier: 'micro', change: 67.9, deployedYear: 2024 },
+      { symbol: 'ROCKET', name: 'RocketCoin', price: 0.0000129, marketCap: 32000000, tier: 'micro', change: -25.4, deployedYear: 2024 },
     ];
 
     demoCoins.forEach((coin, index) => {
@@ -140,6 +140,7 @@ export class MemStorage implements IStorage {
         metadata: {
           isDemo: true,
           lastUpdate: new Date().toISOString(),
+          deployedYear: (coin as any).deployedYear || 2020,
         },
       };
       this.cryptocurrencies.set(id, crypto);
