@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 84%, 4%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 4%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 4%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(187, 90%, 54%);
+  --primary-foreground: hsl(222, 84%, 4%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(217, 32%, 17%);
+  --radius: 0.5rem;
+  
+  /* Custom crypto trading colors */
+  --crypto-green: hsl(158, 64%, 52%);
+  --crypto-red: hsl(350, 89%, 60%);
+  --crypto-orange: hsl(36, 84%, 64%);
+  --crypto-cyan: hsl(187, 90%, 54%);
+  --crypto-purple: hsl(262, 83%, 58%);
+  --crypto-slate: hsl(215, 28%, 17%);
+  --crypto-slate-dark: hsl(222, 84%, 4%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, var(--crypto-slate-dark) 0%, var(--crypto-slate) 100%);
+  }
+}
+
+@layer components {
+  .price-flash {
+    animation: flash 0.5s ease-in-out;
+  }
+  
+  @keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  
+  .tier-header {
+    transition: all 0.3s ease;
+  }
+  
+  .tier-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .opportunity-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+  
+  .opportunity-card:hover {
+    border-color: var(--crypto-cyan);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+  
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, var(--crypto-slate-dark) 0%, var(--crypto-slate) 100%);
+  }
+  
+  .glass-effect {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+  
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(217, 32%, 17%) hsl(222, 84%, 4%);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(222, 84%, 4%);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(217, 32%, 17%);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(217, 32%, 25%);
+  }
+}
+
+@layer utilities {
+  .text-crypto-green {
+    color: var(--crypto-green);
+  }
+  
+  .text-crypto-red {
+    color: var(--crypto-red);
+  }
+  
+  .text-crypto-orange {
+    color: var(--crypto-orange);
+  }
+  
+  .text-crypto-cyan {
+    color: var(--crypto-cyan);
+  }
+  
+  .text-crypto-purple {
+    color: var(--crypto-purple);
+  }
+  
+  .bg-crypto-green {
+    background-color: var(--crypto-green);
+  }
+  
+  .bg-crypto-red {
+    background-color: var(--crypto-red);
+  }
+  
+  .bg-crypto-orange {
+    background-color: var(--crypto-orange);
+  }
+  
+  .bg-crypto-cyan {
+    background-color: var(--crypto-cyan);
+  }
+  
+  .bg-crypto-purple {
+    background-color: var(--crypto-purple);
+  }
+  
+  .border-crypto-green {
+    border-color: var(--crypto-green);
+  }
+  
+  .border-crypto-red {
+    border-color: var(--crypto-red);
+  }
+  
+  .border-crypto-orange {
+    border-color: var(--crypto-orange);
+  }
+  
+  .border-crypto-cyan {
+    border-color: var(--crypto-cyan);
+  }
+  
+  .border-crypto-purple {
+    border-color: var(--crypto-purple);
+  }
+}
