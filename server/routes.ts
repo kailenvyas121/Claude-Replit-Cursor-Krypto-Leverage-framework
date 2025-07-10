@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { CryptoService } from "./services/cryptoService";
 import { OpportunityService } from "./services/opportunityService";
+import { TradingExpertService } from "./services/tradingExpertService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -11,6 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   const cryptoService = CryptoService.getInstance();
   const opportunityService = OpportunityService.getInstance();
+  const tradingExpertService = TradingExpertService.getInstance();
 
   // WebSocket connection handling
   wss.on('connection', (ws: WebSocket) => {
@@ -222,6 +224,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Trading Expert Chat API
+  app.post('/api/trading-expert/chat', async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Get current market context
+      const cryptocurrencies = await storage.getAllCryptocurrencies();
+      const opportunities = await storage.getActiveOpportunities();
+      
+      const marketStats = {
+        totalMarketCap: cryptocurrencies.reduce((sum, coin) => 
+          sum + parseFloat(coin.marketCap?.toString() || '0'), 0),
+        btcDominance: calculateBtcDominance(cryptocurrencies),
+        marketTrend: calculateMarketTrend(cryptocurrencies),
+        volatilityIndex: calculateVolatilityIndex(cryptocurrencies),
+      };
+
+      const context = {
+        cryptocurrencies,
+        opportunities,
+        marketStats
+      };
+
+      // Get AI analysis
+      const analysis = await tradingExpertService.analyzeUserQuery(message, context);
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error('Trading expert chat error:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate response',
+        response: 'I apologize, but I\'m experiencing technical difficulties. Please try your question again.',
+        sentiment: 'neutral' as const,
+        riskLevel: 'medium' as const,
+        confidence: 50,
+        recommendations: ['Try your question again', 'Check market data connectivity']
+      });
+    }
+  });
+
   function calculateMarketTrend(cryptocurrencies: any[]): string {
     const avgChange = cryptocurrencies.reduce((sum, coin) => 
       sum + parseFloat(coin.priceChangePercentage24h?.toString() || '0'), 0) / cryptocurrencies.length;
@@ -238,6 +284,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }, {} as Record<string, number>);
     
     return distribution;
+  }
+
+  function calculateVolatilityIndex(cryptocurrencies: any[]): number {
+    const changes = cryptocurrencies.map(c => Math.abs(parseFloat(c.priceChangePercentage24h || '0')));
+    const avgVolatility = changes.reduce((sum, change) => sum + change, 0) / changes.length;
+    return Math.round(avgVolatility * 10); // Scale to 0-100
   }
 
   // Auto-refresh market data every 5 minutes
