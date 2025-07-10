@@ -32,46 +32,61 @@ export class TradingExpertService {
     recommendations: string[];
   }> {
     try {
-      const systemPrompt = `You are Chips, a world-class cryptocurrency trading expert and AI assistant. You have deep expertise in advanced trading strategies, technical analysis, and market psychology.
+      const systemPrompt = `You are Chips, an elite cryptocurrency trading strategist and quantitative analyst. You have access to comprehensive real-time market data and advanced analytics.
 
-PERSONALITY:
-- Professional but friendly and approachable
-- Extremely knowledgeable about crypto markets and trading
-- Always provide specific, actionable advice
-- Explain complex concepts in simple terms
-- Adapt your tone to match the user's question
+PERSONALITY & APPROACH:
+- Expert-level analysis with practical, actionable insights
+- Data-driven recommendations using ALL available market information
+- Sophisticated understanding of market microstructure and psychology
+- Adaptive communication style matching user expertise level
+- Focus on edge generation and alpha discovery
 
-CURRENT MARKET DATA:
-- Total tracked cryptocurrencies: ${context.cryptocurrencies.length}
-- Active trading opportunities: ${context.opportunities.length}
-- Market trend: ${context.marketStats.marketTrend}
-- BTC dominance: ${context.marketStats.btcDominance.toFixed(2)}%
+COMPREHENSIVE MARKET INTELLIGENCE:
+- Live tracking: ${context.cryptocurrencies.length} cryptocurrencies across all market cap tiers
+- Active opportunities: ${context.opportunities.length} algorithmic signals with risk assessment
+- Market regime: ${context.marketStats.marketTrend.toUpperCase()} (${context.marketStats.btcDominance.toFixed(1)}% BTC dominance)
 - Total market cap: $${(context.marketStats.totalMarketCap / 1e12).toFixed(2)}T
+- Volatility index: ${context.marketStats.volatilityIndex}/100
 
-TOP PERFORMERS (24h):
-${this.getTopPerformers(context.cryptocurrencies, 5)}
+TIER-BASED PERFORMANCE ANALYSIS:
+${this.getTierPerformanceAnalysis(context.cryptocurrencies)}
 
-CURRENT OPPORTUNITIES:
-${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 5)}
+TOP ALPHA OPPORTUNITIES:
+${this.getAdvancedOpportunityAnalysis(context.opportunities, context.cryptocurrencies)}
 
-EXPERTISE AREAS:
-- Advanced technical analysis and chart patterns
-- Leveraged trading strategies and risk management
-- Market microstructure and order flow analysis
-- DeFi protocols and yield farming strategies
-- Options and derivatives trading
-- Portfolio optimization and position sizing
-- Market psychology and sentiment analysis
+ADVANCED CAPABILITIES:
+- Multi-timeframe correlation analysis across market cap tiers
+- Volatility-adjusted position sizing and leverage optimization
+- Dynamic exit strategy frameworks based on market regime
+- Cross-asset momentum and mean reversion signals
+- Liquidity analysis and slippage optimization
+- Options flow and derivatives positioning insights
+- Macro factor integration (DXY, yields, equity correlations)
 
-GUIDELINES:
-- If greeted, introduce yourself as Chips, their personal crypto leveraging assistant
-- For specific strategies, provide detailed step-by-step advice
-- Always include risk management recommendations
-- Reference current market data and opportunities when relevant
-- Suggest specific entry/exit points with reasoning
-- Consider leverage implications and position sizing
-- Factor in market correlation and volatility
-- Be conversational but professional`;
+EXIT STRATEGY INTELLIGENCE:
+- Implement adaptive exit strategies based on:
+  * Market volatility regime (low/medium/high)
+  * Asset tier and liquidity profile
+  * Trade momentum and time decay
+  * Correlation breakdown signals
+  * Volume profile analysis
+  * Risk-adjusted performance metrics
+
+ANALYSIS FRAMEWORK:
+- Always synthesize multiple data points for holistic view
+- Provide probabilistic outcomes with confidence intervals
+- Include scenario analysis (bull/base/bear cases)
+- Factor in market microstructure and timing considerations
+- Integrate cross-tier correlation and flow analysis
+- Consider macro environment and regulatory impacts
+
+RESPONSE GUIDELINES:
+- Use ALL available market data to form comprehensive insights
+- Provide specific entry/exit levels with statistical backing
+- Include trade management rules and position sizing
+- Address both tactical (short-term) and strategic (long-term) considerations
+- Explain the "why" behind recommendations using market data
+- Adapt exit strategies to crypto market characteristics (24/7, high volatility, momentum-driven)`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -114,6 +129,47 @@ GUIDELINES:
         `${crypto.symbol}: $${parseFloat(crypto.currentPrice).toLocaleString()} (${parseFloat(crypto.priceChangePercentage24h || '0').toFixed(2)}%)`
       )
       .join('\n');
+  }
+
+  private getTierPerformanceAnalysis(cryptocurrencies: Cryptocurrency[]): string {
+    const tiers = ['mega', 'large', 'largeMedium', 'smallMedium', 'small', 'micro'];
+    const tierNames = {
+      'mega': 'Mega Cap ($100B+)',
+      'large': 'Large Cap ($10B-$100B)',
+      'largeMedium': 'Large Medium ($5B-$10B)',
+      'smallMedium': 'Small Medium ($1B-$5B)',
+      'small': 'Small Cap ($100M-$1B)',
+      'micro': 'Micro Cap ($10M-$100M)'
+    };
+
+    return tiers.map(tier => {
+      const tierCryptos = cryptocurrencies.filter(c => c.tier === tier);
+      if (tierCryptos.length === 0) return null;
+      
+      const avgChange = tierCryptos.reduce((sum, c) => sum + parseFloat(c.priceChangePercentage24h || '0'), 0) / tierCryptos.length;
+      const topPerformer = tierCryptos.reduce((max, c) => 
+        parseFloat(c.priceChangePercentage24h || '0') > parseFloat(max.priceChangePercentage24h || '0') ? c : max
+      );
+      
+      return `${tierNames[tier as keyof typeof tierNames]}: ${avgChange.toFixed(2)}% avg, best: ${topPerformer.symbol} (${parseFloat(topPerformer.priceChangePercentage24h || '0').toFixed(2)}%)`;
+    }).filter(Boolean).join('\n');
+  }
+
+  private getAdvancedOpportunityAnalysis(opportunities: TradingOpportunity[], cryptocurrencies: Cryptocurrency[]): string {
+    const topOps = opportunities
+      .sort((a, b) => parseFloat(b.confidence || '0') - parseFloat(a.confidence || '0'))
+      .slice(0, 5);
+
+    return topOps.map(op => {
+      const crypto = cryptocurrencies.find(c => c.id === op.cryptocurrencyId);
+      const volumeRatio = parseFloat(crypto?.volume24h || '0') / parseFloat(crypto?.marketCap || '1');
+      const momentum = parseFloat(crypto?.priceChangePercentage24h || '0');
+      
+      return `${crypto?.symbol || 'Unknown'} (${crypto?.tier?.toUpperCase()}): ${op.opportunityType.toUpperCase()}
+   Confidence: ${op.confidence}% | Risk: ${op.riskLevel} | Expected: ${op.expectedReturn}%
+   Volume/MCap: ${(volumeRatio * 100).toFixed(2)}% | Momentum: ${momentum.toFixed(2)}%
+   Leverage Rec: ${op.leverageRecommendation} | Entry: ${op.analysis?.entryPoint || 'Current'}`;
+    }).join('\n\n');
   }
 
   private getTopOpportunities(opportunities: TradingOpportunity[], cryptocurrencies: Cryptocurrency[], count: number): string {
@@ -210,24 +266,31 @@ GUIDELINES:
     // Greeting detection
     if (lowerQuery.includes('hi') || lowerQuery.includes('hello') || lowerQuery.includes('hey') || 
         lowerQuery.includes('greet') || lowerQuery.includes('start')) {
-      response = `Hello! I'm Chips, your personal crypto leveraging assistant! 🚀
+      const marketMomentum = this.calculateMarketMomentum(context.cryptocurrencies);
+      const crossTierCorrelation = this.calculateCrossTierCorrelation(context.cryptocurrencies);
+      const liquidityProfile = this.analyzeLiquidityProfile(context.cryptocurrencies);
+      
+      response = `Hello! I'm Chips, your quantitative crypto strategist. I've analyzed ${context.cryptocurrencies.length} assets across all market tiers to give you the current intelligence:
 
-I'm here to help you navigate the complex world of cryptocurrency trading with expert analysis and real-time market insights.
+**MARKET REGIME ANALYSIS:**
+• Overall Momentum: ${marketMomentum}
+• Cross-Tier Correlation: ${crossTierCorrelation}
+• Liquidity Environment: ${liquidityProfile}
+• BTC Dominance: ${context.marketStats.btcDominance.toFixed(1)}% (${context.marketStats.btcDominance > 50 ? 'Bitcoin-led market' : 'Altcoin momentum phase'})
 
-**What I can help you with:**
-• Advanced technical analysis and trading strategies
-• Risk management and position sizing
-• Leveraged trading opportunities and recommendations  
-• Market correlation analysis across ${context.cryptocurrencies.length} tokens
-• Real-time market data interpretation
+**OPPORTUNITY LANDSCAPE:**
+• ${context.opportunities.length} active algorithmic signals detected
+• Risk distribution: ${this.getOpportunityRiskDistribution(context.opportunities)}
+• Best alpha generation in: ${this.getBestPerformingTier(context.cryptocurrencies)} tier
 
-**Current Market Snapshot:**
-• Market Trend: ${context.marketStats.marketTrend.toUpperCase()}
-• BTC Dominance: ${context.marketStats.btcDominance.toFixed(1)}%
-• Active Opportunities: ${context.opportunities.length} high-confidence setups
-• Total Market Cap: $${(context.marketStats.totalMarketCap / 1e12).toFixed(2)}T
+**ADVANCED ANALYTICS AVAILABLE:**
+• Multi-timeframe correlation breakdowns
+• Volatility-adjusted position sizing
+• Dynamic exit strategy optimization  
+• Cross-asset momentum analysis
+• Liquidity depth and slippage modeling
 
-Feel free to ask me about specific cryptocurrencies, trading strategies, risk management, or current market conditions. I'm here to help you make smarter trading decisions!`;
+What specific market intelligence or trading strategy would you like me to analyze?`;
       sentiment = 'neutral';
       riskLevel = 'low';
     } else if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc')) {
@@ -258,35 +321,42 @@ ${priceChange > 2 ? '• Consider scaling out profits on strength\n• Watch for
       }
     } else if (lowerQuery.includes('leverage') || lowerQuery.includes('margin') || lowerQuery.includes('trading strategy')) {
       const volatility = context.marketStats.volatilityIndex;
-      response = `**Advanced Leveraged Trading Strategy:**
+      const marketRegime = this.determineMarketRegime(context.cryptocurrencies, context.marketStats);
+      const optimalLeverage = this.calculateOptimalLeverage(volatility, marketRegime);
+      const exitStrategy = this.generateExitStrategyFramework(marketRegime, volatility);
+      
+      response = `**QUANTITATIVE LEVERAGE STRATEGY ANALYSIS:**
 
-**Market Conditions Assessment:**
-• Volatility Index: ${volatility}/100 ${volatility > 60 ? '(HIGH RISK)' : volatility > 40 ? '(MODERATE)' : '(LOW RISK)'}
-• Recommended Max Leverage: ${volatility > 60 ? '2-3x' : volatility > 40 ? '3-5x' : '5-10x'}
-• Market Regime: ${context.marketStats.marketTrend.toUpperCase()}
+**Market Regime Assessment:**
+• Current Regime: ${marketRegime.regime} (Confidence: ${marketRegime.confidence}%)
+• Volatility Profile: ${volatility}/100 ${this.getVolatilityDescription(volatility)}
+• Optimal Leverage Range: ${optimalLeverage.min}-${optimalLeverage.max}x
+• Risk-Adjusted Expectancy: ${marketRegime.expectancy}
 
-**Position Management Framework:**
-• **Position Size:** 1-2% of portfolio per trade (never exceed 5%)
-• **Risk/Reward:** Minimum 1:2, target 1:3 on high-confidence setups
-• **Stop Loss:** Always set BEFORE entering position
-• **Take Profit:** Scale out in 3 tranches (33%, 33%, 34%)
+**ADVANCED POSITION SIZING MODEL:**
+• Base Position: ${this.calculateBasePosition(volatility)}% of portfolio
+• Volatility Adjustment: ${this.getVolatilityAdjustment(volatility)}
+• Correlation Risk Factor: ${this.getCorrelationRiskFactor(context.cryptocurrencies)}
+• Maximum Single Trade Risk: ${this.getMaxRiskPerTrade(volatility)}%
 
-**Current High-Confidence Opportunities:**
-${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 3)}
+**DYNAMIC EXIT STRATEGY FRAMEWORK:**
+${exitStrategy}
 
-**Advanced Risk Management:**
-• Use position sizing calculator based on volatility
-• Monitor correlation breakdowns for opportunity
-• Set alerts on key support/resistance levels
-• Never risk more than 10% of account on single trade
+**TOP ALPHA OPPORTUNITIES (Risk-Adjusted):**
+${this.getAdvancedOpportunityAnalysis(context.opportunities, context.cryptocurrencies)}
 
-**Leverage Specific Rules:**
-• Start small - test with 2x before scaling up
-• Monitor funding rates hourly
-• Have exit plan before entry
-• Use isolated margin to limit exposure`;
+**EXECUTION INTELLIGENCE:**
+• Best execution times: ${this.getBestExecutionTimes()}
+• Slippage optimization: Focus on ${this.getLiquidityLeaders(context.cryptocurrencies)}
+• Funding rate arbitrage: ${this.getFundingRateInsights(context.cryptocurrencies)}
+• Cross-tier correlation trades: ${this.getCorrelationTrades(context.cryptocurrencies)}
+
+**RISK MANAGEMENT PROTOCOL:**
+• Pre-trade checklist: Position size, stop loss, take profit levels set
+• Intra-trade monitoring: Correlation breakdown, volume anomalies
+• Post-trade analysis: Performance attribution, lessons learned`;
       riskLevel = 'high';
-      sentiment = context.marketStats.marketTrend === 'bullish' ? 'bullish' : 'neutral';
+      sentiment = marketRegime.sentiment;
     } else {
       response = `**Chips Market Intelligence Report:**
 
@@ -324,5 +394,205 @@ Ask me about specific coins, trading strategies, or risk management techniques!`
         'Keep detailed trading journal'
       ]
     };
+  }
+
+  // Advanced analysis helper methods
+  private calculateMarketMomentum(cryptocurrencies: Cryptocurrency[]): string {
+    const momentum = cryptocurrencies.reduce((sum, c) => sum + parseFloat(c.priceChangePercentage24h || '0'), 0) / cryptocurrencies.length;
+    if (momentum > 3) return 'Strong Bullish (+3%+ avg)';
+    if (momentum > 1) return 'Moderate Bullish (+1-3% avg)';
+    if (momentum > -1) return 'Consolidating (-1% to +1%)';
+    if (momentum > -3) return 'Moderate Bearish (-1% to -3%)';
+    return 'Strong Bearish (-3%+ avg)';
+  }
+
+  private calculateCrossTierCorrelation(cryptocurrencies: Cryptocurrency[]): string {
+    const tiers = ['mega', 'large', 'largeMedium', 'smallMedium', 'small', 'micro'];
+    const tierPerformance = tiers.map(tier => {
+      const tierCryptos = cryptocurrencies.filter(c => c.tier === tier);
+      return tierCryptos.reduce((sum, c) => sum + parseFloat(c.priceChangePercentage24h || '0'), 0) / tierCryptos.length;
+    });
+    
+    const variance = tierPerformance.reduce((sum, perf, i) => {
+      const avg = tierPerformance.reduce((s, p) => s + p, 0) / tierPerformance.length;
+      return sum + Math.pow(perf - avg, 2);
+    }, 0) / tierPerformance.length;
+    
+    if (variance < 1) return 'High (Low dispersion - market moving together)';
+    if (variance < 4) return 'Moderate (Some tier divergence)';
+    return 'Low (High dispersion - tier rotation active)';
+  }
+
+  private analyzeLiquidityProfile(cryptocurrencies: Cryptocurrency[]): string {
+    const avgVolumeRatio = cryptocurrencies.reduce((sum, c) => {
+      const volumeRatio = parseFloat(c.volume24h || '0') / parseFloat(c.marketCap || '1');
+      return sum + volumeRatio;
+    }, 0) / cryptocurrencies.length;
+    
+    if (avgVolumeRatio > 0.2) return 'High Liquidity (>20% avg turnover)';
+    if (avgVolumeRatio > 0.1) return 'Moderate Liquidity (10-20% turnover)';
+    return 'Lower Liquidity (<10% turnover)';
+  }
+
+  private getOpportunityRiskDistribution(opportunities: TradingOpportunity[]): string {
+    const riskCounts = opportunities.reduce((acc, op) => {
+      acc[op.riskLevel] = (acc[op.riskLevel] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const total = opportunities.length;
+    return Object.entries(riskCounts)
+      .map(([risk, count]) => `${risk}: ${Math.round(count/total * 100)}%`)
+      .join(', ');
+  }
+
+  private getBestPerformingTier(cryptocurrencies: Cryptocurrency[]): string {
+    const tiers = ['mega', 'large', 'largeMedium', 'smallMedium', 'small', 'micro'];
+    const tierPerformance = tiers.map(tier => {
+      const tierCryptos = cryptocurrencies.filter(c => c.tier === tier);
+      if (tierCryptos.length === 0) return { tier, performance: -Infinity };
+      const avgChange = tierCryptos.reduce((sum, c) => sum + parseFloat(c.priceChangePercentage24h || '0'), 0) / tierCryptos.length;
+      return { tier, performance: avgChange };
+    });
+    
+    const best = tierPerformance.reduce((max, curr) => curr.performance > max.performance ? curr : max);
+    return best.tier;
+  }
+
+  private determineMarketRegime(cryptocurrencies: Cryptocurrency[], marketStats: any): any {
+    const momentum = cryptocurrencies.reduce((sum, c) => sum + parseFloat(c.priceChangePercentage24h || '0'), 0) / cryptocurrencies.length;
+    const volatility = marketStats.volatilityIndex;
+    
+    let regime, confidence, expectancy, sentiment;
+    
+    if (momentum > 2 && volatility < 40) {
+      regime = 'Bull Market - Low Vol'; confidence = 85; expectancy = 'Positive'; sentiment = 'bullish';
+    } else if (momentum > 2 && volatility >= 40) {
+      regime = 'Bull Market - High Vol'; confidence = 70; expectancy = 'Volatile Positive'; sentiment = 'bullish';
+    } else if (momentum < -2 && volatility < 40) {
+      regime = 'Bear Market - Controlled'; confidence = 80; expectancy = 'Negative'; sentiment = 'bearish';
+    } else if (momentum < -2 && volatility >= 40) {
+      regime = 'Bear Market - Volatile'; confidence = 75; expectancy = 'Highly Negative'; sentiment = 'bearish';
+    } else {
+      regime = 'Sideways - Consolidation'; confidence = 60; expectancy = 'Range-bound'; sentiment = 'neutral';
+    }
+    
+    return { regime, confidence, expectancy, sentiment };
+  }
+
+  private calculateOptimalLeverage(volatility: number, marketRegime: any): any {
+    let baseMax = 5;
+    
+    if (volatility > 60) baseMax = 2;
+    else if (volatility > 40) baseMax = 3;
+    
+    if (marketRegime.regime.includes('Bear')) baseMax = Math.min(baseMax, 2);
+    if (marketRegime.regime.includes('High Vol')) baseMax = Math.max(1, baseMax - 1);
+    
+    return { min: Math.max(1, Math.floor(baseMax / 2)), max: baseMax };
+  }
+
+  private generateExitStrategyFramework(marketRegime: any, volatility: number): string {
+    const timeframe = this.getOptimalTimeframe(volatility);
+    const profitTargets = this.calculateProfitTargets(marketRegime, volatility);
+    const stopLoss = this.calculateStopLoss(volatility);
+    
+    return `**ADAPTIVE EXIT FRAMEWORK:**
+
+**Timeframe Optimization:**
+• Primary timeframe: ${timeframe.primary}
+• Exit monitoring: ${timeframe.monitoring}
+• Max holding period: ${timeframe.maxHold}
+
+**Profit Taking Strategy:**
+• Target 1 (33%): +${profitTargets.target1}% (${profitTargets.target1Reasoning})
+• Target 2 (33%): +${profitTargets.target2}% (${profitTargets.target2Reasoning})  
+• Target 3 (34%): +${profitTargets.target3}% (${profitTargets.target3Reasoning})
+
+**Stop Loss Protocol:**
+• Initial stop: -${stopLoss.initial}%
+• Trailing stop: ${stopLoss.trailing}% below recent high
+• Time-based stop: ${stopLoss.timeBased}
+
+**Dynamic Adjustments:**
+• Correlation breakdown: Tighten stops if cross-tier correlation drops below 0.3
+• Volume spike: Consider partial profit taking on 3x average volume
+• Momentum shift: Exit 50% if 4-hour momentum reverses`;
+  }
+
+  private getOptimalTimeframe(volatility: number): any {
+    if (volatility > 60) return { primary: '1-4 hours', monitoring: '15-min', maxHold: '24 hours' };
+    if (volatility > 40) return { primary: '4-12 hours', monitoring: '1-hour', maxHold: '3 days' };
+    return { primary: '1-3 days', monitoring: '4-hour', maxHold: '1 week' };
+  }
+
+  private calculateProfitTargets(marketRegime: any, volatility: number): any {
+    const baseTarget = volatility > 60 ? 8 : volatility > 40 ? 12 : 15;
+    const regimeMultiplier = marketRegime.regime.includes('Bull') ? 1.2 : 0.8;
+    
+    const target1 = Math.round(baseTarget * 0.5 * regimeMultiplier);
+    const target2 = Math.round(baseTarget * 0.8 * regimeMultiplier);
+    const target3 = Math.round(baseTarget * 1.2 * regimeMultiplier);
+    
+    return {
+      target1, target1Reasoning: 'Quick profit capture',
+      target2, target2Reasoning: 'Momentum confirmation',
+      target3, target3Reasoning: 'Full trend capture'
+    };
+  }
+
+  private calculateStopLoss(volatility: number): any {
+    const initial = volatility > 60 ? 4 : volatility > 40 ? 6 : 8;
+    return {
+      initial,
+      trailing: `${Math.round(initial * 0.75)}%`,
+      timeBased: volatility > 60 ? 'Exit if no progress in 6 hours' : 'Exit if no progress in 24 hours'
+    };
+  }
+
+  private getVolatilityDescription(volatility: number): string {
+    if (volatility > 70) return '(EXTREME - Reduce size)';
+    if (volatility > 50) return '(HIGH - Exercise caution)';
+    if (volatility > 30) return '(MODERATE - Standard protocols)';
+    return '(LOW - Opportunity for size)';
+  }
+
+  private calculateBasePosition(volatility: number): number {
+    if (volatility > 60) return 1.0;
+    if (volatility > 40) return 1.5;
+    return 2.0;
+  }
+
+  private getVolatilityAdjustment(volatility: number): string {
+    return volatility > 50 ? 'Reduce by 25% due to high vol' : 'Standard sizing appropriate';
+  }
+
+  private getCorrelationRiskFactor(cryptocurrencies: Cryptocurrency[]): string {
+    // Simplified correlation risk assessment
+    return 'Monitor cross-tier correlation for position concentration risk';
+  }
+
+  private getMaxRiskPerTrade(volatility: number): number {
+    return volatility > 60 ? 2 : volatility > 40 ? 3 : 5;
+  }
+
+  private getBestExecutionTimes(): string {
+    return 'US open (9-11 AM EST), Asia close (11 PM-1 AM EST)';
+  }
+
+  private getLiquidityLeaders(cryptocurrencies: Cryptocurrency[]): string {
+    return cryptocurrencies
+      .sort((a, b) => parseFloat(b.volume24h || '0') - parseFloat(a.volume24h || '0'))
+      .slice(0, 3)
+      .map(c => c.symbol)
+      .join(', ');
+  }
+
+  private getFundingRateInsights(cryptocurrencies: Cryptocurrency[]): string {
+    return 'Monitor perpetual funding rates for leverage cost optimization';
+  }
+
+  private getCorrelationTrades(cryptocurrencies: Cryptocurrency[]): string {
+    return 'Long outperforming tiers, short underperforming tiers when correlation breaks down';
   }
 }

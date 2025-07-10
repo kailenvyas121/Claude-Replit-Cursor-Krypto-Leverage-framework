@@ -19,7 +19,8 @@ export interface CoinGeckoMarketData {
 
 export class CryptoService {
   private static instance: CryptoService;
-  private rateLimitDelay = 1000; // 1 second between requests for free tier
+  private rateLimitDelay = 2000; // 2 seconds between requests to avoid rate limits
+  private lastRequestTime = 0;
 
   static getInstance(): CryptoService {
     if (!CryptoService.instance) {
@@ -29,6 +30,15 @@ export class CryptoService {
   }
 
   private async makeRequest(endpoint: string, params: Record<string, any> = {}): Promise<any> {
+    // Rate limiting with exponential backoff
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.rateLimitDelay) {
+      const waitTime = this.rateLimitDelay - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+
     const headers: Record<string, string> = {
       'Accept': 'application/json',
     };
@@ -38,13 +48,32 @@ export class CryptoService {
     }
 
     try {
+      this.lastRequestTime = Date.now();
       const response = await axios.get(`${COINGECKO_BASE_URL}${endpoint}`, {
         headers,
         params,
+        timeout: 10000, // 10 second timeout
       });
+      
+      // Reset delay on successful request
+      this.rateLimitDelay = Math.max(1000, this.rateLimitDelay * 0.9);
+      
       return response.data;
-    } catch (error) {
-      console.error('CoinGecko API error:', error);
+    } catch (error: any) {
+      console.error('CoinGecko API error:', error?.response?.status, error?.message);
+      
+      // Handle rate limiting with exponential backoff
+      if (error?.response?.status === 429) {
+        this.rateLimitDelay = Math.min(30000, this.rateLimitDelay * 2); // Max 30 seconds
+        const retryAfter = error?.response?.headers?.['retry-after'];
+        if (retryAfter) {
+          const waitTime = parseInt(retryAfter) * 1000;
+          console.log(`Rate limited, waiting ${waitTime}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          return this.makeRequest(endpoint, params); // Retry once
+        }
+      }
+      
       throw error;
     }
   }
@@ -69,7 +98,7 @@ export class CryptoService {
     let page = 1;
     let hasMore = true;
 
-    while (hasMore && allData.length < 2000) {
+    while (hasMore && allData.length < 1000) { // Reduced to 1000 to avoid rate limits
       try {
         const data = await this.getMarketData(page, perPage);
         if (data && data.length > 0) {
@@ -77,20 +106,27 @@ export class CryptoService {
           page++;
           hasMore = data.length === perPage;
           
-          // Rate limiting for free tier
+          // Ensure we don't hit rate limits
           if (page > 1) {
             await new Promise(resolve => setTimeout(resolve, this.rateLimitDelay));
           }
         } else {
           hasMore = false;
         }
-      } catch (error) {
-        console.error(`Error fetching page ${page}:`, error);
-        hasMore = false;
+      } catch (error: any) {
+        console.error(`Error fetching page ${page}:`, error?.response?.status || error?.message);
+        
+        // Stop on rate limit to avoid further issues
+        if (error?.response?.status === 429) {
+          console.log('Rate limit reached, stopping data fetch');
+          hasMore = false;
+        } else {
+          hasMore = false;
+        }
       }
     }
 
-    return allData.slice(0, 2000); // Expanded to 2000 tokens for better analysis
+    return allData.slice(0, 1000); // Reduced to 1000 to avoid rate limits while maintaining good analysis
   }
 
   determineMarketCapTier(marketCap: number): string {

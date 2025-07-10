@@ -328,7 +328,7 @@ export default function TradingExpertChat({ marketData }: TradingExpertChatProps
                 <div className={`max-w-[75%] ${
                   message.type === 'user' 
                     ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' 
-                    : 'bg-slate-800/80 text-slate-100 border border-slate-700/50'
+                    : 'bg-slate-800/80 text-white border border-slate-700/50'
                 } rounded-2xl px-4 py-3 shadow-lg`}>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs font-medium opacity-70">
