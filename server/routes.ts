@@ -307,5 +307,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }, 5 * 60 * 1000); // 5 minutes
 
+  // Favorites routes
+  app.get('/api/favorites/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const favorites = await storage.getUserFavorites(userId);
+      
+      // Get full cryptocurrency data for favorites
+      const cryptocurrencies = await storage.getAllCryptocurrencies();
+      const favoriteCoins = favorites.map(favorite => {
+        const coin = cryptocurrencies.find(c => c.id === favorite.cryptocurrencyId);
+        return coin ? { ...coin, favoriteId: favorite.id } : null;
+      }).filter(Boolean);
+      
+      res.json(favoriteCoins);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      res.status(500).json({ error: 'Failed to fetch favorites' });
+    }
+  });
+
+  app.post('/api/favorites', async (req, res) => {
+    try {
+      const { userId, cryptocurrencyId } = req.body;
+      if (!userId || !cryptocurrencyId) {
+        return res.status(400).json({ error: 'userId and cryptocurrencyId are required' });
+      }
+      
+      const favorite = await storage.addFavorite(userId, cryptocurrencyId);
+      res.json(favorite);
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      res.status(500).json({ error: 'Failed to add favorite' });
+    }
+  });
+
+  app.delete('/api/favorites/:userId/:cryptocurrencyId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const cryptocurrencyId = parseInt(req.params.cryptocurrencyId);
+      
+      await storage.removeFavorite(userId, cryptocurrencyId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      res.status(500).json({ error: 'Failed to remove favorite' });
+    }
+  });
+
+  app.get('/api/favorites/check/:userId/:cryptocurrencyId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const cryptocurrencyId = parseInt(req.params.cryptocurrencyId);
+      
+      const isFavorite = await storage.isFavorite(userId, cryptocurrencyId);
+      res.json({ isFavorite });
+    } catch (error) {
+      console.error('Error checking favorite:', error);
+      res.status(500).json({ error: 'Failed to check favorite status' });
+    }
+  });
+
   return httpServer;
 }

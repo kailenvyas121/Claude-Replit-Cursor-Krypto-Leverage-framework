@@ -16,13 +16,14 @@ import LeverageExchanges from "./LeverageExchanges";
 import TradingExpertChat from "./TradingExpertChat";
 import OpportunityCard from "./OpportunityCard";
 import CryptoDiscovery from "./CryptoDiscovery";
+import PersonalDashboard from "./PersonalDashboard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface MainContentProps {
-  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'discovery';
-  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'discovery') => void;
+  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'personal' | 'discovery';
+  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'personal' | 'discovery') => void;
   marketData: any;
   isConnected: boolean;
 }
@@ -96,17 +97,18 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
   return (
     <main className="flex-1 p-6">
       <Tabs value={activeTab} onValueChange={onTabChange as any}>
-        <TabsList className="grid w-full grid-cols-7 bg-slate-900/80 backdrop-blur-sm">
+        <TabsList className="grid w-full grid-cols-8 bg-slate-900/80 backdrop-blur-sm">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="comparison">Market Comparison</TabsTrigger>
           <TabsTrigger value="analysis">Tier Analysis</TabsTrigger>
           <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
           <TabsTrigger value="exchanges">Exchanges</TabsTrigger>
           <TabsTrigger value="ai-expert">AI Expert</TabsTrigger>
+          <TabsTrigger value="personal">Personal</TabsTrigger>
           <TabsTrigger value="discovery">Discovery</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-8">
           {/* Market Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
@@ -187,7 +189,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white">Market Cap Distribution</CardTitle>
@@ -208,7 +210,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           </div>
         </TabsContent>
 
-        <TabsContent value="comparison" className="space-y-6">
+        <TabsContent value="comparison" className="space-y-8">
           {/* Advanced Filtering Options */}
           <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
@@ -289,7 +291,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           </Card>
 
           {/* Dynamic Charts Based on Filter */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white">
@@ -325,7 +327,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           </div>
 
           {/* Lag Detection Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white">Tier Deviation Tracker</CardTitle>
@@ -612,7 +614,7 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           </div>
         </TabsContent>
 
-        <TabsContent value="analysis" className="space-y-6">
+        <TabsContent value="analysis" className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
@@ -884,7 +886,11 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
           <TradingExpertChat marketData={marketData} />
         </TabsContent>
 
-        <TabsContent value="discovery">
+        <TabsContent value="personal" className="space-y-6">
+          <PersonalDashboard marketData={marketData} />
+        </TabsContent>
+
+        <TabsContent value="discovery" className="space-y-6">
           <CryptoDiscovery marketData={marketData} />
         </TabsContent>
       </Tabs>

@@ -1,4 +1,8 @@
 import { useState, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import TokenDetailModal from "./TokenDetailModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,6 +118,70 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
   const [sortBy, setSortBy] = useState<'marketCap' | 'volume' | 'change' | 'name'>('marketCap');
   const [activeTab, setActiveTab] = useState<'overview' | 'popular' | 'tiers'>('overview');
   const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // For demo purposes, using userId = 1
+  const userId = 1;
+
+  // Fetch user's favorite cryptocurrencies
+  const { data: favoritesList = [] } = useQuery({
+    queryKey: ['/api/favorites', userId],
+    queryFn: () => apiRequest('GET', `/api/favorites/${userId}`)
+  });
+
+  // Create a set of favorite IDs for quick lookup
+  const favoriteIds = new Set(favoritesList.map((fav: any) => fav.id));
+
+  // Add favorite mutation
+  const addFavoriteMutation = useMutation({
+    mutationFn: (cryptocurrencyId: number) => 
+      apiRequest('POST', '/api/favorites', { userId, cryptocurrencyId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites', userId] });
+      toast({
+        title: "Added to favorites",
+        description: "Token added to your personal watchlist",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add to favorites",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove favorite mutation
+  const removeFavoriteMutation = useMutation({
+    mutationFn: (cryptocurrencyId: number) => 
+      apiRequest('DELETE', `/api/favorites/${userId}/${cryptocurrencyId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites', userId] });
+      toast({
+        title: "Removed from favorites",
+        description: "Token removed from your personal watchlist",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to remove from favorites",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleFavorite = (token: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the modal
+    if (favoriteIds.has(token.id)) {
+      removeFavoriteMutation.mutate(token.id);
+    } else {
+      addFavoriteMutation.mutate(token.id);
+    }
+  };
 
   const processedTokens = useMemo(() => {
     if (!marketData?.cryptocurrencies) return [];
@@ -284,7 +352,11 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
                 const IconComponent = tierConfig.icon;
                 
                 return (
-                  <Card key={token.id} className="bg-slate-900/50 border-slate-700 hover:bg-slate-800/50 transition-colors">
+                  <Card 
+                    key={token.id} 
+                    className="bg-slate-900/50 border-slate-700 hover:bg-slate-800/50 transition-colors cursor-pointer"
+                    onClick={() => setSelectedToken(token)}
+                  >
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -324,8 +396,16 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
                           <Badge className={tierConfig.bgColor + ' ' + tierConfig.color + ' border-0'}>
                             {tierConfig.name}
                           </Badge>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => toggleFavorite(token, e)}
+                            className={`${favoriteIds.has(token.id) ? 'text-yellow-400 hover:text-yellow-300' : 'text-slate-400 hover:text-yellow-400'}`}
+                          >
+                            <Star className={`h-4 w-4 ${favoriteIds.has(token.id) ? 'fill-current' : ''}`} />
+                          </Button>
                           <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
-                            <ChevronRight className="h-4 w-4" />
+                            <BarChart3 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -427,6 +507,14 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {selectedToken && (
+        <TokenDetailModal
+          isOpen={!!selectedToken}
+          onClose={() => setSelectedToken(null)}
+          token={selectedToken}
+        />
+      )}
     </div>
   );
 }

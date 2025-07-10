@@ -4,6 +4,7 @@ import {
   tradingOpportunities,
   correlationData,
   priceHistory,
+  userFavorites,
   type User, 
   type InsertUser,
   type Cryptocurrency,
@@ -11,7 +12,9 @@ import {
   type TradingOpportunity,
   type InsertTradingOpportunity,
   type CorrelationData,
-  type PriceHistory
+  type PriceHistory,
+  type UserFavorite,
+  type InsertUserFavorite
 } from "@shared/schema";
 
 export interface IStorage {
@@ -38,6 +41,12 @@ export interface IStorage {
   // Price history methods
   getPriceHistory(cryptocurrencyId: number, hours: number): Promise<PriceHistory[]>;
   addPriceHistory(priceData: Omit<PriceHistory, 'id' | 'timestamp'>): Promise<PriceHistory>;
+  
+  // Favorites methods
+  getUserFavorites(userId: number): Promise<UserFavorite[]>;
+  addFavorite(userId: number, cryptocurrencyId: number): Promise<UserFavorite>;
+  removeFavorite(userId: number, cryptocurrencyId: number): Promise<void>;
+  isFavorite(userId: number, cryptocurrencyId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,12 +55,14 @@ export class MemStorage implements IStorage {
   private tradingOpportunities: Map<number, TradingOpportunity> = new Map();
   private correlationData: Map<number, CorrelationData> = new Map();
   private priceHistory: Map<number, PriceHistory> = new Map();
+  private userFavorites: Map<number, UserFavorite> = new Map();
   
   private currentUserId = 1;
   private currentCryptoId = 1;
   private currentOpportunityId = 1;
   private currentCorrelationId = 1;
   private currentPriceHistoryId = 1;
+  private currentFavoriteId = 1;
 
   constructor() {
     this.initializeDemoData();
@@ -417,6 +428,50 @@ export class MemStorage implements IStorage {
     };
     this.priceHistory.set(id, newPriceHistory);
     return newPriceHistory;
+  }
+
+  // Favorites methods
+  async getUserFavorites(userId: number): Promise<UserFavorite[]> {
+    return Array.from(this.userFavorites.values()).filter(
+      (favorite) => favorite.userId === userId
+    );
+  }
+
+  async addFavorite(userId: number, cryptocurrencyId: number): Promise<UserFavorite> {
+    // Check if favorite already exists
+    const existingFavorite = Array.from(this.userFavorites.values()).find(
+      (favorite) => favorite.userId === userId && favorite.cryptocurrencyId === cryptocurrencyId
+    );
+    
+    if (existingFavorite) {
+      return existingFavorite;
+    }
+
+    const id = this.currentFavoriteId++;
+    const newFavorite: UserFavorite = {
+      id,
+      userId,
+      cryptocurrencyId,
+      createdAt: new Date(),
+    };
+    this.userFavorites.set(id, newFavorite);
+    return newFavorite;
+  }
+
+  async removeFavorite(userId: number, cryptocurrencyId: number): Promise<void> {
+    const favoriteToRemove = Array.from(this.userFavorites.entries()).find(
+      ([_, favorite]) => favorite.userId === userId && favorite.cryptocurrencyId === cryptocurrencyId
+    );
+    
+    if (favoriteToRemove) {
+      this.userFavorites.delete(favoriteToRemove[0]);
+    }
+  }
+
+  async isFavorite(userId: number, cryptocurrencyId: number): Promise<boolean> {
+    return Array.from(this.userFavorites.values()).some(
+      (favorite) => favorite.userId === userId && favorite.cryptocurrencyId === cryptocurrencyId
+    );
   }
 }
 
