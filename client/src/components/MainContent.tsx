@@ -227,16 +227,16 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
                     <SelectTrigger className="bg-slate-800 border-slate-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Tiers</SelectItem>
-                      <SelectItem value="mega">Mega Cap Only</SelectItem>
-                      <SelectItem value="large">Large Cap Only</SelectItem>
-                      <SelectItem value="largeMedium">Large Medium Only</SelectItem>
-                      <SelectItem value="smallMedium">Small Medium Only</SelectItem>
-                      <SelectItem value="small">Small Cap Only</SelectItem>
-                      <SelectItem value="micro">Micro/Shit Coins Only</SelectItem>
-                      <SelectItem value="compare-large">Compare Large vs Medium</SelectItem>
-                      <SelectItem value="compare-small">Compare Small vs Micro</SelectItem>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      <SelectItem value="all" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">All Tiers</SelectItem>
+                      <SelectItem value="mega" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Mega Cap Only</SelectItem>
+                      <SelectItem value="large" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Large Cap Only</SelectItem>
+                      <SelectItem value="largeMedium" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Large Medium Only</SelectItem>
+                      <SelectItem value="smallMedium" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Small Medium Only</SelectItem>
+                      <SelectItem value="small" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Small Cap Only</SelectItem>
+                      <SelectItem value="micro" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Micro/Shit Coins Only</SelectItem>
+                      <SelectItem value="compare-large" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Compare Large vs Medium</SelectItem>
+                      <SelectItem value="compare-small" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Compare Small vs Micro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -246,13 +246,13 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
                     <SelectTrigger className="bg-slate-800 border-slate-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1h">1 Hour</SelectItem>
-                      <SelectItem value="4h">4 Hours</SelectItem>
-                      <SelectItem value="24h">24 Hours</SelectItem>
-                      <SelectItem value="7d">7 Days</SelectItem>
-                      <SelectItem value="30d">30 Days</SelectItem>
-                      <SelectItem value="90d">90 Days</SelectItem>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      <SelectItem value="1h" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">1 Hour</SelectItem>
+                      <SelectItem value="4h" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">4 Hours</SelectItem>
+                      <SelectItem value="24h" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">24 Hours</SelectItem>
+                      <SelectItem value="7d" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">7 Days</SelectItem>
+                      <SelectItem value="30d" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">30 Days</SelectItem>
+                      <SelectItem value="90d" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">90 Days</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -262,13 +262,13 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
                     <SelectTrigger className="bg-slate-800 border-slate-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="performance">Performance</SelectItem>
-                      <SelectItem value="volatility">Volatility</SelectItem>
-                      <SelectItem value="volume">Volume</SelectItem>
-                      <SelectItem value="marketcap">Market Cap</SelectItem>
-                      <SelectItem value="correlation">Correlation</SelectItem>
-                      <SelectItem value="deviation">Tier Deviation</SelectItem>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      <SelectItem value="performance" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Performance</SelectItem>
+                      <SelectItem value="volatility" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Volatility</SelectItem>
+                      <SelectItem value="volume" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Volume</SelectItem>
+                      <SelectItem value="marketcap" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Market Cap</SelectItem>
+                      <SelectItem value="correlation" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Correlation</SelectItem>
+                      <SelectItem value="deviation" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Tier Deviation</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -278,11 +278,11 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
                     <SelectTrigger className="bg-slate-800 border-slate-600">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="live">Live Data</SelectItem>
-                      <SelectItem value="historical">Historical</SelectItem>
-                      <SelectItem value="candlestick">Candlestick</SelectItem>
-                      <SelectItem value="heatmap">Heatmap</SelectItem>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      <SelectItem value="live" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Live Data</SelectItem>
+                      <SelectItem value="historical" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Historical</SelectItem>
+                      <SelectItem value="candlestick" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Candlestick</SelectItem>
+                      <SelectItem value="heatmap" className="hover:bg-slate-700 focus:bg-slate-700 text-slate-200">Heatmap</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
