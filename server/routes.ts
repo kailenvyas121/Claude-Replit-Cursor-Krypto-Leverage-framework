@@ -127,6 +127,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get price history for a token
+  app.get('/api/price-history/:symbol/:timeframe', async (req, res) => {
+    try {
+      const { symbol, timeframe } = req.params;
+      
+      // Get the cryptocurrency from storage first
+      const crypto = await storage.getCryptocurrencyBySymbol(symbol.toUpperCase());
+      if (!crypto) {
+        return res.status(404).json({ error: 'Cryptocurrency not found' });
+      }
+
+      // Calculate days based on timeframe
+      let days = 1;
+      switch (timeframe) {
+        case '1d': days = 1; break;
+        case '1m': days = 30; break;
+        case '1y': days = 365; break;
+        case '5y': days = 1825; break;
+        case 'max': days = 'max' as any; break;
+        default: days = 1;
+      }
+
+      // Try to get price history from CoinGecko
+      try {
+        const priceHistory = await cryptoService.getPriceHistory(crypto.coinGeckoId || symbol.toLowerCase(), days);
+        
+        // Transform the data to match our expected format
+        const formattedData = priceHistory.prices?.map(([timestamp, price]: [number, number]) => ({
+          timestamp: new Date(timestamp).toISOString(),
+          price: price
+        })) || [];
+
+        res.json(formattedData);
+      } catch (apiError) {
+        console.error('CoinGecko API error:', apiError);
+        // Return error so frontend can use fallback data
+        res.status(503).json({ error: 'Market data temporarily unavailable' });
+      }
+    } catch (error) {
+      console.error('Error fetching price history:', error);
+      res.status(500).json({ error: 'Failed to fetch price history' });
+    }
+  });
+
   app.post('/api/market/refresh', async (req, res) => {
     try {
       console.log('Refreshing market data...');

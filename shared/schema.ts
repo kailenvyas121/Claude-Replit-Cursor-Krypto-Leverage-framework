@@ -12,6 +12,7 @@ export const cryptocurrencies = pgTable("cryptocurrencies", {
   id: serial("id").primaryKey(),
   symbol: text("symbol").notNull().unique(),
   name: text("name").notNull(),
+  coinGeckoId: text("coingecko_id"),
   currentPrice: decimal("current_price", { precision: 20, scale: 8 }).notNull(),
   marketCap: decimal("market_cap", { precision: 20, scale: 2 }).notNull(),
   marketCapRank: integer("market_cap_rank"),

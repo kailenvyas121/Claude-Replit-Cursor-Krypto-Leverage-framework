@@ -12,14 +12,15 @@ import TierAnalysisChart from "./charts/TierAnalysisChart";
 import LeverageOpportunityChart from "./charts/LeverageOpportunityChart";
 import CascadeAnalysisChart from "./charts/CascadeAnalysisChart";
 import SmartAlertSystem from "./SmartAlertSystem";
+import LeverageExchanges from "./LeverageExchanges";
 import OpportunityCard from "./OpportunityCard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface MainContentProps {
-  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities';
-  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities') => void;
+  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges';
+  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges') => void;
   marketData: any;
   isConnected: boolean;
 }
@@ -93,11 +94,12 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
   return (
     <main className="flex-1 p-6">
       <Tabs value={activeTab} onValueChange={onTabChange as any}>
-        <TabsList className="grid w-full grid-cols-4 bg-slate-900/80 backdrop-blur-sm">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-900/80 backdrop-blur-sm">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="comparison">Market Comparison</TabsTrigger>
           <TabsTrigger value="analysis">Tier Analysis</TabsTrigger>
           <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
+          <TabsTrigger value="exchanges">Exchanges</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -868,6 +870,10 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
               <SmartAlertSystem marketData={marketData} />
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="exchanges" className="space-y-6">
+          <LeverageExchanges marketData={marketData} />
         </TabsContent>
       </Tabs>
     </main>

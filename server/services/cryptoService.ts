@@ -106,6 +106,7 @@ export class CryptoService {
     return {
       symbol: coinData.symbol.toUpperCase(),
       name: coinData.name,
+      coinGeckoId: coinData.id,
       currentPrice: coinData.current_price.toString(),
       marketCap: coinData.market_cap.toString(),
       marketCapRank: coinData.market_cap_rank,

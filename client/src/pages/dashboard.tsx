@@ -7,7 +7,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useCryptoData } from "@/hooks/useCryptoData";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'comparison' | 'analysis' | 'opportunities'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges'>('overview');
   const [expandedTiers, setExpandedTiers] = useState<Set<string>>(new Set());
   
   const {
