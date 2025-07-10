@@ -82,20 +82,20 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
   };
 
   const portfolioStats = {
-    totalValue: favorites.reduce((sum: number, token: any) => 
-      sum + parseFloat(token.marketCap || '0'), 0),
-    avgPerformance: favorites.length > 0 ? 
+    totalValue: Array.isArray(favorites) ? favorites.reduce((sum: number, token: any) => 
+      sum + parseFloat(token.marketCap || '0'), 0) : 0,
+    avgPerformance: Array.isArray(favorites) && favorites.length > 0 ? 
       favorites.reduce((sum: number, token: any) => 
         sum + parseFloat(token.priceChangePercentage24h || '0'), 0) / favorites.length : 0,
-    totalOpportunities: favorites.reduce((sum: number, token: any) => 
-      sum + getOpportunitiesForToken(token.id).length, 0),
-    riskDistribution: favorites.reduce((acc: any, token: any) => {
+    totalOpportunities: Array.isArray(favorites) ? favorites.reduce((sum: number, token: any) => 
+      sum + getOpportunitiesForToken(token.id).length, 0) : 0,
+    riskDistribution: Array.isArray(favorites) ? favorites.reduce((acc: any, token: any) => {
       const opportunities = getOpportunitiesForToken(token.id);
       opportunities.forEach((opp: any) => {
         acc[opp.riskLevel] = (acc[opp.riskLevel] || 0) + 1;
       });
       return acc;
-    }, {})
+    }, {}) : {}
   };
 
   if (isLoading) {
@@ -118,7 +118,7 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
             <Star className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{favorites.length}</div>
+            <div className="text-2xl font-bold text-white">{Array.isArray(favorites) ? favorites.length : 0}</div>
             <p className="text-xs text-slate-400">Tokens tracked</p>
           </CardContent>
         </Card>
@@ -165,7 +165,7 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
         </Card>
       </div>
 
-      {favorites.length === 0 ? (
+      {!Array.isArray(favorites) || favorites.length === 0 ? (
         <Card className="bg-slate-900/80 backdrop-blur-sm border-slate-700">
           <CardContent className="flex flex-col items-center justify-center p-12">
             <Star className="h-16 w-16 text-slate-600 mb-4" />
@@ -192,7 +192,7 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
 
           <TabsContent value="watchlist" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {favorites.map((token: any) => {
+              {Array.isArray(favorites) && favorites.map((token: any) => {
                 const tierInfo = getTierInfo(token.tier);
                 const change = parseFloat(token.priceChangePercentage24h || '0');
                 const opportunities = getOpportunitiesForToken(token.id);
@@ -301,7 +301,7 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {favorites.map((token: any) => {
+                  {Array.isArray(favorites) && favorites.map((token: any) => {
                     const opportunities = getOpportunitiesForToken(token.id);
                     if (opportunities.length === 0) return null;
 
@@ -385,11 +385,11 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
                 <CardContent>
                   <div className="space-y-3">
                     {Object.entries(
-                      favorites.reduce((acc: any, token: any) => {
+                      Array.isArray(favorites) ? favorites.reduce((acc: any, token: any) => {
                         const tierInfo = getTierInfo(token.tier);
                         acc[tierInfo.name] = (acc[tierInfo.name] || 0) + 1;
                         return acc;
-                      }, {})
+                      }, {}) : {}
                     ).map(([tier, count]) => (
                       <div key={tier} className="flex justify-between items-center">
                         <span className="text-slate-300">{tier}</span>

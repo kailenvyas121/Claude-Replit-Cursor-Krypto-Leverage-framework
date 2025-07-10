@@ -98,14 +98,14 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
     <main className="flex-1 p-6">
       <Tabs value={activeTab} onValueChange={onTabChange as any}>
         <TabsList className="grid w-full grid-cols-8 bg-slate-900/80 backdrop-blur-sm">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="comparison">Market Comparison</TabsTrigger>
-          <TabsTrigger value="analysis">Tier Analysis</TabsTrigger>
-          <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
-          <TabsTrigger value="exchanges">Exchanges</TabsTrigger>
-          <TabsTrigger value="ai-expert">AI Expert</TabsTrigger>
-          <TabsTrigger value="personal">Personal</TabsTrigger>
-          <TabsTrigger value="discovery">Discovery</TabsTrigger>
+          <TabsTrigger value="overview" className="text-xs px-2">Overview</TabsTrigger>
+          <TabsTrigger value="comparison" className="text-xs px-2">Market</TabsTrigger>
+          <TabsTrigger value="analysis" className="text-xs px-2">Tiers</TabsTrigger>
+          <TabsTrigger value="opportunities" className="text-xs px-2">Signals</TabsTrigger>
+          <TabsTrigger value="exchanges" className="text-xs px-1">Exchange</TabsTrigger>
+          <TabsTrigger value="ai-expert" className="text-xs px-1">AI Chat</TabsTrigger>
+          <TabsTrigger value="personal" className="text-xs px-2">Personal</TabsTrigger>
+          <TabsTrigger value="discovery" className="text-xs px-1">Discovery</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8">
