@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Auto-refreshing market data...');
       const marketData = await cryptoService.getAllMarketData();
       
-      for (const coinData of marketData.slice(0, 100)) { // Limit to avoid rate limits
+      for (const coinData of marketData.slice(0, 500)) { // Expanded token processing
         const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
         await storage.upsertCryptocurrency(cryptocurrency);
       }

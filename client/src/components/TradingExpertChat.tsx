@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, TrendingUp, AlertTriangle, Target, DollarSign } from 'lucide-react';
+import { Send, Bot, User, TrendingUp, AlertTriangle, Target, Activity } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -24,19 +24,7 @@ interface TradingExpertChatProps {
 }
 
 export default function TradingExpertChat({ marketData }: TradingExpertChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      content: "Hello! I'm your AI Trading Expert. I have access to all your market data and can help with:\n\n• Technical analysis & chart patterns\n• Risk assessment & position sizing\n• Leveraged trading strategies\n• Market correlation insights\n• Entry/exit timing\n\nWhat would you like to analyze today?",
-      timestamp: new Date(),
-      analysis: {
-        sentiment: 'neutral',
-        riskLevel: 'low',
-        confidence: 95
-      }
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -283,71 +271,146 @@ export default function TradingExpertChat({ marketData }: TradingExpertChatProps
   };
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-blue-500" />
-          AI Trading Expert
-          <Badge variant="secondary" className="ml-auto">
-            Live Market Data
-          </Badge>
-        </CardTitle>
-      </CardHeader>
+    <div className="h-[700px] bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-2xl overflow-hidden">
+      {/* Modern Header */}
+      <div className="border-b border-slate-700/50 bg-gradient-to-r from-blue-900/20 to-purple-900/20 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Bot className="h-6 w-6 text-blue-400" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Chips AI</h3>
+              <p className="text-xs text-slate-400">Your Crypto Trading Assistant</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="bg-green-900/30 text-green-400 border-green-400/30">
+              <Activity className="h-3 w-3 mr-1" />
+              Live Data
+            </Badge>
+            <Badge variant="outline" className="text-slate-300 border-slate-600">
+              {marketData?.cryptocurrencies?.length || 0} Tokens
+            </Badge>
+          </div>
+        </div>
+      </div>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col h-[calc(100%-80px)]">
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-6">
+            {messages.length === 0 && (
+              <div className="text-center py-12">
+                <Bot className="h-12 w-12 text-blue-400 mx-auto mb-4 opacity-50" />
+                <h4 className="text-lg font-medium text-white mb-2">Welcome to Chips AI</h4>
+                <p className="text-slate-400 text-sm max-w-md mx-auto">
+                  Your advanced cryptocurrency trading assistant. Ask me about market analysis, trading strategies, or specific tokens.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center mt-4">
+                  <Badge variant="outline" className="text-xs">Market Analysis</Badge>
+                  <Badge variant="outline" className="text-xs">Trading Strategies</Badge>
+                  <Badge variant="outline" className="text-xs">Risk Management</Badge>
+                  <Badge variant="outline" className="text-xs">Token Research</Badge>
+                </div>
+              </div>
+            )}
+            
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] ${message.type === 'user' ? 'bg-blue-600' : 'bg-slate-800'} rounded-lg p-3`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {message.type === 'user' ? (
-                      <User className="h-4 w-4" />
-                    ) : (
-                      <Bot className="h-4 w-4" />
-                    )}
-                    <span className="text-sm opacity-70">
-                      {message.type === 'user' ? 'You' : 'Trading Expert'}
+              <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}>
+                {message.type === 'bot' && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                )}
+                
+                <div className={`max-w-[75%] ${
+                  message.type === 'user' 
+                    ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' 
+                    : 'bg-slate-800/80 text-slate-100 border border-slate-700/50'
+                } rounded-2xl px-4 py-3 shadow-lg`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium opacity-70">
+                      {message.type === 'user' ? 'You' : 'Chips'}
+                    </span>
+                    <span className="text-xs opacity-50">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <div className="text-sm whitespace-pre-wrap">
-                    {message.content}
+                  
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {message.content}
+                    </div>
                   </div>
                   
                   {message.analysis && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge variant={message.analysis.sentiment === 'bullish' ? 'default' : 
-                                   message.analysis.sentiment === 'bearish' ? 'destructive' : 'secondary'}>
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {message.analysis.sentiment}
-                      </Badge>
-                      <Badge variant={message.analysis.riskLevel === 'high' ? 'destructive' : 
-                                   message.analysis.riskLevel === 'medium' ? 'default' : 'secondary'}>
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        {message.analysis.riskLevel} risk
-                      </Badge>
-                      <Badge variant="outline">
-                        <Target className="h-3 w-3 mr-1" />
-                        {message.analysis.confidence}% confidence
-                      </Badge>
+                    <div className="mt-4 pt-3 border-t border-slate-600/30">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge 
+                          variant={message.analysis.sentiment === 'bullish' ? 'default' : 
+                                 message.analysis.sentiment === 'bearish' ? 'destructive' : 'secondary'}
+                          className="text-xs"
+                        >
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          {message.analysis.sentiment}
+                        </Badge>
+                        <Badge 
+                          variant={message.analysis.riskLevel === 'high' ? 'destructive' : 
+                                 message.analysis.riskLevel === 'medium' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {message.analysis.riskLevel} risk
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          <Target className="h-3 w-3 mr-1" />
+                          {message.analysis.confidence}% confidence
+                        </Badge>
+                      </div>
+                      
+                      {message.analysis.recommendations && message.analysis.recommendations.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-slate-400 mb-1">Recommendations:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {message.analysis.recommendations.slice(0, 3).map((rec, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs opacity-70">
+                                {rec}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+                
+                {message.type === 'user' && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                )}
               </div>
             ))}
             
             {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-slate-800 rounded-lg p-3 max-w-[80%]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Bot className="h-4 w-4" />
-                    <span className="text-sm opacity-70">Trading Expert</span>
+              <div className="flex justify-start items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="bg-slate-800/80 border border-slate-700/50 rounded-2xl px-4 py-3 shadow-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium opacity-70">Chips</span>
+                    <span className="text-xs opacity-50">thinking...</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                    <span className="text-sm text-slate-400 ml-2">Analyzing market data...</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-sm text-slate-400">Analyzing market data...</span>
                   </div>
                 </div>
               </div>
@@ -356,24 +419,38 @@ export default function TradingExpertChat({ marketData }: TradingExpertChatProps
           <div ref={messagesEndRef} />
         </ScrollArea>
         
-        <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Ask about crypto markets, trading strategies, risk management..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1"
-            />
-            <Button onClick={handleSendMessage} disabled={!inputMessage.trim() || isTyping}>
+        {/* Modern Input Area */}
+        <div className="border-t border-slate-700/50 bg-slate-800/30 p-4">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <Input
+                placeholder="Ask Chips about trading strategies, market analysis, or specific cryptocurrencies..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="bg-slate-900/50 border-slate-600 focus:border-blue-500 text-white placeholder-slate-400 rounded-xl h-12 px-4"
+                disabled={isTyping}
+              />
+            </div>
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={!inputMessage.trim() || isTyping}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-12 px-6 rounded-xl shadow-lg"
+            >
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-xs text-slate-500 mt-2">
-            Press Enter to send • Ask about specific coins, trading strategies, risk management, or market analysis
+          <div className="flex items-center justify-between mt-3">
+            <div className="text-xs text-slate-500">
+              Press Enter to send • Powered by Google Gemini AI
+            </div>
+            <div className="flex gap-1">
+              <Badge variant="outline" className="text-xs">Technical Analysis</Badge>
+              <Badge variant="outline" className="text-xs">Risk Management</Badge>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

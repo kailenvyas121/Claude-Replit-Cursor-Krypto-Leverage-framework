@@ -69,7 +69,7 @@ export class CryptoService {
     let page = 1;
     let hasMore = true;
 
-    while (hasMore && allData.length < 500) {
+    while (hasMore && allData.length < 2000) {
       try {
         const data = await this.getMarketData(page, perPage);
         if (data && data.length > 0) {
@@ -90,7 +90,7 @@ export class CryptoService {
       }
     }
 
-    return allData.slice(0, 500); // Limit to 500 tokens
+    return allData.slice(0, 2000); // Expanded to 2000 tokens for better analysis
   }
 
   determineMarketCapTier(marketCap: number): string {

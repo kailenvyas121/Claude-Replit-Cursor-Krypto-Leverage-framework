@@ -32,17 +32,14 @@ export class TradingExpertService {
     recommendations: string[];
   }> {
     try {
-      const systemPrompt = `You are a world-class cryptocurrency trading expert and financial analyst with deep expertise in:
+      const systemPrompt = `You are Chips, a world-class cryptocurrency trading expert and AI assistant. You have deep expertise in advanced trading strategies, technical analysis, and market psychology.
 
-EXPERTISE AREAS:
-- Advanced technical analysis and chart patterns
-- Leveraged trading strategies and risk management
-- Market microstructure and order flow analysis
-- DeFi protocols and yield farming strategies
-- Options and derivatives trading
-- Portfolio optimization and position sizing
-- Market psychology and sentiment analysis
-- Regulatory impacts on crypto markets
+PERSONALITY:
+- Professional but friendly and approachable
+- Extremely knowledgeable about crypto markets and trading
+- Always provide specific, actionable advice
+- Explain complex concepts in simple terms
+- Adapt your tone to match the user's question
 
 CURRENT MARKET DATA:
 - Total tracked cryptocurrencies: ${context.cryptocurrencies.length}
@@ -52,38 +49,36 @@ CURRENT MARKET DATA:
 - Total market cap: $${(context.marketStats.totalMarketCap / 1e12).toFixed(2)}T
 
 TOP PERFORMERS (24h):
-${this.getTopPerformers(context.cryptocurrencies, 3)}
+${this.getTopPerformers(context.cryptocurrencies, 5)}
 
 CURRENT OPPORTUNITIES:
-${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 3)}
+${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 5)}
 
-ANALYSIS GUIDELINES:
-1. Provide specific, actionable trading advice
-2. Include risk management recommendations
-3. Reference current market data when relevant
-4. Explain technical concepts clearly
-5. Suggest specific entry/exit points when appropriate
-6. Consider leverage implications and position sizing
-7. Factor in market correlation and volatility
+EXPERTISE AREAS:
+- Advanced technical analysis and chart patterns
+- Leveraged trading strategies and risk management
+- Market microstructure and order flow analysis
+- DeFi protocols and yield farming strategies
+- Options and derivatives trading
+- Portfolio optimization and position sizing
+- Market psychology and sentiment analysis
 
-RESPONSE FORMAT:
-- Be concise but comprehensive
-- Use bullet points for key insights
-- Include specific price levels and percentages
-- Mention risk/reward ratios
-- Reference current market conditions
-
-Answer the user's question with expert-level analysis:`;
+GUIDELINES:
+- If greeted, introduce yourself as Chips, their personal crypto leveraging assistant
+- For specific strategies, provide detailed step-by-step advice
+- Always include risk management recommendations
+- Reference current market data and opportunities when relevant
+- Suggest specific entry/exit points with reasoning
+- Consider leverage implications and position sizing
+- Factor in market correlation and volatility
+- Be conversational but professional`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: [
-          { role: "system", parts: [{ text: systemPrompt }] },
-          { role: "user", parts: [{ text: query }] }
-        ],
+        contents: `${systemPrompt}\n\nUser Question: ${query}`,
         config: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
+          temperature: 0.8,
+          maxOutputTokens: 2000,
         }
       });
 
@@ -212,28 +207,121 @@ Answer the user's question with expert-level analysis:`;
     let sentiment: 'bullish' | 'bearish' | 'neutral' = 'neutral';
     let riskLevel: 'low' | 'medium' | 'high' = 'medium';
 
-    if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc')) {
+    // Greeting detection
+    if (lowerQuery.includes('hi') || lowerQuery.includes('hello') || lowerQuery.includes('hey') || 
+        lowerQuery.includes('greet') || lowerQuery.includes('start')) {
+      response = `Hello! I'm Chips, your personal crypto leveraging assistant! 🚀
+
+I'm here to help you navigate the complex world of cryptocurrency trading with expert analysis and real-time market insights.
+
+**What I can help you with:**
+• Advanced technical analysis and trading strategies
+• Risk management and position sizing
+• Leveraged trading opportunities and recommendations  
+• Market correlation analysis across ${context.cryptocurrencies.length} tokens
+• Real-time market data interpretation
+
+**Current Market Snapshot:**
+• Market Trend: ${context.marketStats.marketTrend.toUpperCase()}
+• BTC Dominance: ${context.marketStats.btcDominance.toFixed(1)}%
+• Active Opportunities: ${context.opportunities.length} high-confidence setups
+• Total Market Cap: $${(context.marketStats.totalMarketCap / 1e12).toFixed(2)}T
+
+Feel free to ask me about specific cryptocurrencies, trading strategies, risk management, or current market conditions. I'm here to help you make smarter trading decisions!`;
+      sentiment = 'neutral';
+      riskLevel = 'low';
+    } else if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc')) {
       const btc = context.cryptocurrencies.find(c => c.symbol === 'BTC');
       if (btc) {
-        response = `Bitcoin Analysis:\n\n• Current Price: $${parseFloat(btc.currentPrice).toLocaleString()}\n• 24h Change: ${parseFloat(btc.priceChangePercentage24h || '0').toFixed(2)}%\n• Market Dominance: ${context.marketStats.btcDominance.toFixed(2)}%\n\nTechnical Outlook:\n• ${parseFloat(btc.priceChangePercentage24h || '0') > 0 ? 'Bullish momentum' : 'Bearish pressure'}\n• Volume: ${parseFloat(btc.volume24h || '0') > 1e10 ? 'High institutional activity' : 'Moderate trading volume'}\n• Recommendation: ${parseFloat(btc.priceChangePercentage24h || '0') > 2 ? 'Consider profit taking' : 'DCA strategy recommended'}`;
-        sentiment = parseFloat(btc.priceChangePercentage24h || '0') > 0 ? 'bullish' : 'bearish';
+        const priceChange = parseFloat(btc.priceChangePercentage24h || '0');
+        response = `**Bitcoin (BTC) Deep Analysis:**
+
+**Current Metrics:**
+• Price: $${parseFloat(btc.currentPrice).toLocaleString()}
+• 24h Change: ${priceChange.toFixed(2)}% ${priceChange > 0 ? '📈' : '📉'}
+• Market Dominance: ${context.marketStats.btcDominance.toFixed(2)}%
+• Volume: $${parseFloat(btc.volume24h || '0').toLocaleString()}
+
+**Technical Analysis:**
+• Momentum: ${Math.abs(priceChange) > 3 ? 'Strong' : 'Moderate'} ${priceChange > 0 ? 'bullish' : 'bearish'} pressure
+• Volatility: ${Math.abs(priceChange) > 5 ? 'Elevated' : 'Normal'} intraday movement
+• Volume Profile: ${parseFloat(btc.volume24h || '0') > 2e10 ? 'High institutional activity' : 'Standard retail flow'}
+
+**Trading Strategy:**
+${priceChange > 2 ? '• Consider scaling out profits on strength\n• Watch for resistance at psychological levels\n• Set trailing stops to protect gains' : 
+  priceChange < -2 ? '• DCA strategy on weakness\n• Look for support confluence\n• Consider spot accumulation over leverage' :
+  '• Range-bound trading environment\n• Wait for clear directional breakout\n• Monitor volume for confirmation'}
+
+**Risk Assessment:** ${Math.abs(priceChange) > 4 ? 'Elevated due to high volatility' : 'Moderate - standard market conditions'}`;
+        sentiment = priceChange > 0 ? 'bullish' : 'bearish';
+        riskLevel = Math.abs(priceChange) > 4 ? 'high' : 'medium';
       }
-    } else if (lowerQuery.includes('leverage') || lowerQuery.includes('margin')) {
-      response = `Leverage Trading Analysis:\n\n• Current Market Volatility: ${context.marketStats.volatilityIndex > 50 ? 'High' : 'Moderate'}\n• Recommended Max Leverage: ${context.marketStats.volatilityIndex > 50 ? '2-3x' : '3-5x'}\n• Active Opportunities: ${context.opportunities.length}\n\nRisk Management:\n• Position Size: 1-3% of portfolio per trade\n• Stop Loss: Mandatory for all leveraged positions\n• Take Profit: Set at 2:1 risk/reward minimum\n\nTop Opportunities:\n${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 3)}`;
+    } else if (lowerQuery.includes('leverage') || lowerQuery.includes('margin') || lowerQuery.includes('trading strategy')) {
+      const volatility = context.marketStats.volatilityIndex;
+      response = `**Advanced Leveraged Trading Strategy:**
+
+**Market Conditions Assessment:**
+• Volatility Index: ${volatility}/100 ${volatility > 60 ? '(HIGH RISK)' : volatility > 40 ? '(MODERATE)' : '(LOW RISK)'}
+• Recommended Max Leverage: ${volatility > 60 ? '2-3x' : volatility > 40 ? '3-5x' : '5-10x'}
+• Market Regime: ${context.marketStats.marketTrend.toUpperCase()}
+
+**Position Management Framework:**
+• **Position Size:** 1-2% of portfolio per trade (never exceed 5%)
+• **Risk/Reward:** Minimum 1:2, target 1:3 on high-confidence setups
+• **Stop Loss:** Always set BEFORE entering position
+• **Take Profit:** Scale out in 3 tranches (33%, 33%, 34%)
+
+**Current High-Confidence Opportunities:**
+${this.getTopOpportunities(context.opportunities, context.cryptocurrencies, 3)}
+
+**Advanced Risk Management:**
+• Use position sizing calculator based on volatility
+• Monitor correlation breakdowns for opportunity
+• Set alerts on key support/resistance levels
+• Never risk more than 10% of account on single trade
+
+**Leverage Specific Rules:**
+• Start small - test with 2x before scaling up
+• Monitor funding rates hourly
+• Have exit plan before entry
+• Use isolated margin to limit exposure`;
       riskLevel = 'high';
+      sentiment = context.marketStats.marketTrend === 'bullish' ? 'bullish' : 'neutral';
     } else {
-      response = `Market Overview:\n\n• Total Cryptocurrencies: ${context.cryptocurrencies.length}\n• Market Trend: ${context.marketStats.marketTrend}\n• Active Opportunities: ${context.opportunities.length}\n• BTC Dominance: ${context.marketStats.btcDominance.toFixed(2)}%\n\nKey Insights:\n• Market sentiment appears ${context.marketStats.marketTrend.toLowerCase()}\n• ${context.opportunities.length > 5 ? 'Multiple trading opportunities available' : 'Limited opportunities in current market'}\n• Volatility: ${context.marketStats.volatilityIndex > 50 ? 'Elevated' : 'Normal'}\n\nRecommendation: ${context.opportunities.length > 5 ? 'Selective trading approach' : 'Wait for better setups'}`;
+      response = `**Chips Market Intelligence Report:**
+
+**Global Crypto Overview:**
+• Total Assets Tracked: ${context.cryptocurrencies.length.toLocaleString()} cryptocurrencies
+• Market Trend: ${context.marketStats.marketTrend.toUpperCase()} momentum detected
+• Active Opportunities: ${context.opportunities.length} algorithmic signals
+• BTC Dominance: ${context.marketStats.btcDominance.toFixed(2)}% ${context.marketStats.btcDominance > 50 ? '(Bitcoin strength)' : '(Altcoin season potential)'}
+
+**Top Market Movers (24h):**
+${this.getTopPerformers(context.cryptocurrencies, 5)}
+
+**Key Market Insights:**
+• Volatility Environment: ${context.marketStats.volatilityIndex > 50 ? 'High volatility - exercise caution' : 'Stable conditions - good for position building'}
+• Opportunity Density: ${context.opportunities.length > 10 ? 'Rich target environment' : context.opportunities.length > 5 ? 'Moderate setup availability' : 'Limited high-confidence signals'}
+• Risk Assessment: ${context.marketStats.marketTrend === 'bullish' && context.marketStats.volatilityIndex < 40 ? 'Favorable risk/reward environment' : 'Exercise heightened caution'}
+
+**Strategic Recommendation:**
+${context.opportunities.length > 8 ? '**ACTIVE TRADING PHASE** - Multiple high-probability setups available. Focus on best risk/reward opportunities.' : 
+  context.opportunities.length > 3 ? '**SELECTIVE TRADING** - Cherry-pick highest conviction plays only.' :
+  '**DEFENSIVE POSITIONING** - Wait for better market structure before deploying significant capital.'}
+
+Ask me about specific coins, trading strategies, or risk management techniques!`;
     }
 
     return {
       response,
       sentiment,
       riskLevel,
-      confidence: 70,
+      confidence: 85,
       recommendations: [
-        'Monitor market conditions closely',
-        'Use appropriate risk management',
-        'Consider current volatility levels'
+        'Always use stop losses on leveraged positions',
+        'Size positions based on volatility',
+        'Monitor market correlation changes',
+        'Keep detailed trading journal'
       ]
     };
   }
