@@ -51,14 +51,15 @@ export default function TokenDetailModal({ isOpen, onClose, token }: TokenDetail
     let dataPoints: { timestamp: string; price: number }[] = [];
     
     const configs = {
-      '1d': { points: 288, interval: 5 * 60 * 1000 }, // 5 min intervals
-      '1m': { points: 120, interval: 6 * 60 * 60 * 1000 }, // 6 hour intervals
-      '1y': { points: 365, interval: 24 * 60 * 60 * 1000 }, // daily
-      '5y': { points: 1300, interval: 24 * 60 * 60 * 1000 }, // daily for 5 years
+      '1d': { points: 288, interval: 5 * 60 * 1000, volatility: 0.008 }, // 5 min intervals
+      '1m': { points: 720, interval: 60 * 60 * 1000, volatility: 0.02 }, // hourly for month
+      '1y': { points: 365, interval: 24 * 60 * 60 * 1000, volatility: 0.05 }, // daily
+      '5y': { points: 1825, interval: 24 * 60 * 60 * 1000, volatility: 0.08 }, // daily for 5 years
       'max': { 
-        points: Math.max(365, Math.floor(Math.random() * 2000) + 500), 
+        points: Math.floor(Math.random() * 2500) + 1000, 
         interval: 24 * 60 * 60 * 1000,
-        deploymentDate: new Date(Date.now() - Math.floor(Math.random() * 8) * 365 * 24 * 60 * 60 * 1000) // Random deployment 0-8 years ago
+        volatility: 0.12,
+        deploymentDate: new Date(Date.now() - Math.floor(Math.random() * 8) * 365 * 24 * 60 * 60 * 1000)
       }
     };
     
@@ -72,25 +73,57 @@ export default function TokenDetailModal({ isOpen, onClose, token }: TokenDetail
       startTime = new Date(now.getTime() - config.points * config.interval);
     }
     
-    // Start with a lower price and trend upward to current price
-    let startPrice = currentPrice * (0.1 + Math.random() * 0.3); // Start 10-40% of current price
-    if (timeframe === '1d' || timeframe === '1m') {
-      startPrice = currentPrice * (0.85 + Math.random() * 0.3); // Much closer for short timeframes
+    // More realistic starting prices based on token's current performance
+    const priceChange24h = parseFloat(token.priceChangePercentage24h || '0');
+    let startMultiplier: number;
+    
+    switch (timeframe) {
+      case '1d':
+        startMultiplier = 1 - (priceChange24h / 100);
+        break;
+      case '1m':
+        startMultiplier = Math.max(0.1, 1 - (priceChange24h * 2) / 100);
+        break;
+      case '1y':
+        startMultiplier = Math.max(0.05, Math.random() * 0.8 + 0.1);
+        break;
+      case '5y':
+        startMultiplier = Math.max(0.01, Math.random() * 0.5 + 0.05);
+        break;
+      case 'max':
+        startMultiplier = Math.max(0.001, Math.random() * 0.3 + 0.01);
+        break;
+      default:
+        startMultiplier = 0.5;
     }
     
+    let startPrice = currentPrice * startMultiplier;
     const totalGrowth = currentPrice / startPrice;
-    const volatility = timeframe === '1d' ? 0.005 : timeframe === '1m' ? 0.015 : 0.03;
+    
+    // Add market cycles for longer timeframes
+    let cycleCount = 0;
+    if (timeframe === '1y') cycleCount = 2;
+    if (timeframe === '5y') cycleCount = 3;
+    if (timeframe === 'max') cycleCount = 5;
     
     for (let i = 0; i < config.points; i++) {
       const progress = i / (config.points - 1);
       const time = new Date(startTime.getTime() + i * config.interval);
       
-      // Calculate trend-based price
-      const trendPrice = startPrice * Math.pow(totalGrowth, progress);
+      // Base trend growth
+      let trendPrice = startPrice * Math.pow(totalGrowth, progress);
       
-      // Add realistic volatility
-      const volatilityFactor = 1 + (Math.random() - 0.5) * 2 * volatility;
-      const price = Math.max(trendPrice * volatilityFactor, 0.0001);
+      // Add market cycles for realism
+      if (cycleCount > 0) {
+        const cyclePhase = (progress * cycleCount * 2 * Math.PI);
+        const cycleAmplitude = 0.3 * progress; // Cycles get bigger over time
+        const cycleEffect = 1 + cycleAmplitude * Math.sin(cyclePhase) * 0.5;
+        trendPrice *= cycleEffect;
+      }
+      
+      // Add realistic volatility that increases with longer timeframes
+      const volatilityFactor = 1 + (Math.random() - 0.5) * 2 * config.volatility * (1 + progress * 0.5);
+      const price = Math.max(trendPrice * volatilityFactor, currentPrice * 0.001);
       
       dataPoints.push({
         timestamp: time.toISOString(),
@@ -304,9 +337,9 @@ export default function TokenDetailModal({ isOpen, onClose, token }: TokenDetail
           </div>
 
           {/* Chart */}
-          <Card className="flex-1 bg-slate-800/50 border-slate-700">
-            <CardContent className="p-4 h-full">
-              <div className="relative h-full">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-4">
+              <div className="relative h-80 w-full">
                 {isPriceLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50 rounded">
                     <div className="text-slate-400">Loading real market data...</div>

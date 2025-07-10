@@ -132,7 +132,7 @@ export default function CryptoDiscovery({ marketData }: CryptoDiscoveryProps) {
   });
 
   // Create a set of favorite IDs for quick lookup
-  const favoriteIds = new Set(favoritesList.map((fav: any) => fav.id));
+  const favoriteIds = new Set(Array.isArray(favoritesList) ? favoritesList.map((fav: any) => fav.cryptocurrencyId || fav.id) : []);
 
   // Add favorite mutation
   const addFavoriteMutation = useMutation({
