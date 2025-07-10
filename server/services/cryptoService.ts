@@ -98,7 +98,7 @@ export class CryptoService {
     let page = 1;
     let hasMore = true;
 
-    while (hasMore && allData.length < 1000) { // Reduced to 1000 to avoid rate limits
+    while (hasMore && allData.length < 750) { // Optimized to 750 for better performance
       try {
         const data = await this.getMarketData(page, perPage);
         if (data && data.length > 0) {
@@ -126,7 +126,7 @@ export class CryptoService {
       }
     }
 
-    return allData.slice(0, 1000); // Reduced to 1000 to avoid rate limits while maintaining good analysis
+    return allData.slice(0, 750); // Optimized to 750 for better performance and analysis
   }
 
   determineMarketCapTier(marketCap: number): string {

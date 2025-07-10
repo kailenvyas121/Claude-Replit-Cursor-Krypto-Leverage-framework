@@ -15,13 +15,14 @@ import SmartAlertSystem from "./SmartAlertSystem";
 import LeverageExchanges from "./LeverageExchanges";
 import TradingExpertChat from "./TradingExpertChat";
 import OpportunityCard from "./OpportunityCard";
+import CryptoDiscovery from "./CryptoDiscovery";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface MainContentProps {
-  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert';
-  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert') => void;
+  activeTab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'discovery';
+  onTabChange: (tab: 'overview' | 'comparison' | 'analysis' | 'opportunities' | 'exchanges' | 'ai-expert' | 'discovery') => void;
   marketData: any;
   isConnected: boolean;
 }
@@ -95,13 +96,14 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
   return (
     <main className="flex-1 p-6">
       <Tabs value={activeTab} onValueChange={onTabChange as any}>
-        <TabsList className="grid w-full grid-cols-6 bg-slate-900/80 backdrop-blur-sm">
+        <TabsList className="grid w-full grid-cols-7 bg-slate-900/80 backdrop-blur-sm">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="comparison">Market Comparison</TabsTrigger>
           <TabsTrigger value="analysis">Tier Analysis</TabsTrigger>
           <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
           <TabsTrigger value="exchanges">Exchanges</TabsTrigger>
           <TabsTrigger value="ai-expert">AI Expert</TabsTrigger>
+          <TabsTrigger value="discovery">Discovery</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -880,6 +882,10 @@ export default function MainContent({ activeTab, onTabChange, marketData, isConn
 
         <TabsContent value="ai-expert" className="space-y-6">
           <TradingExpertChat marketData={marketData} />
+        </TabsContent>
+
+        <TabsContent value="discovery">
+          <CryptoDiscovery marketData={marketData} />
         </TabsContent>
       </Tabs>
     </main>
