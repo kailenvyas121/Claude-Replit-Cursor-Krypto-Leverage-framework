@@ -65,6 +65,13 @@ export const userFavorites = pgTable("user_favorites", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const favoriteOpportunities = pgTable("favorite_opportunities", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  opportunityId: integer("opportunity_id").references(() => tradingOpportunities.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -85,6 +92,11 @@ export const insertUserFavoriteSchema = createInsertSchema(userFavorites).omit({
   createdAt: true,
 });
 
+export const insertFavoriteOpportunitySchema = createInsertSchema(favoriteOpportunities).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Cryptocurrency = typeof cryptocurrencies.$inferSelect;
@@ -95,3 +107,5 @@ export type PriceHistory = typeof priceHistory.$inferSelect;
 export type CorrelationData = typeof correlationData.$inferSelect;
 export type UserFavorite = typeof userFavorites.$inferSelect;
 export type InsertUserFavorite = z.infer<typeof insertUserFavoriteSchema>;
+export type FavoriteOpportunity = typeof favoriteOpportunities.$inferSelect;
+export type InsertFavoriteOpportunity = z.infer<typeof insertFavoriteOpportunitySchema>;

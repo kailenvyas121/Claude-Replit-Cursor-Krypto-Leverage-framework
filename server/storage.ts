@@ -47,6 +47,12 @@ export interface IStorage {
   addFavorite(userId: number, cryptocurrencyId: number): Promise<UserFavorite>;
   removeFavorite(userId: number, cryptocurrencyId: number): Promise<void>;
   isFavorite(userId: number, cryptocurrencyId: number): Promise<boolean>;
+  
+  // Opportunity favorites methods
+  getUserFavoriteOpportunities(userId: number): Promise<FavoriteOpportunity[]>;
+  addFavoriteOpportunity(userId: number, opportunityId: number): Promise<FavoriteOpportunity>;
+  removeFavoriteOpportunity(userId: number, opportunityId: number): Promise<void>;
+  isFavoriteOpportunity(userId: number, opportunityId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -56,6 +62,7 @@ export class MemStorage implements IStorage {
   private correlationData: Map<number, CorrelationData> = new Map();
   private priceHistory: Map<number, PriceHistory> = new Map();
   private userFavorites: Map<number, UserFavorite> = new Map();
+  private favoriteOpportunities: Map<number, FavoriteOpportunity> = new Map();
   
   private currentUserId = 1;
   private currentCryptoId = 1;
@@ -63,6 +70,7 @@ export class MemStorage implements IStorage {
   private currentCorrelationId = 1;
   private currentPriceHistoryId = 1;
   private currentFavoriteId = 1;
+  private currentFavoriteOpportunityId = 1;
 
   constructor() {
     this.initializeDemoData();
@@ -472,6 +480,39 @@ export class MemStorage implements IStorage {
   async isFavorite(userId: number, cryptocurrencyId: number): Promise<boolean> {
     return Array.from(this.userFavorites.values()).some(
       (favorite) => favorite.userId === userId && favorite.cryptocurrencyId === cryptocurrencyId
+    );
+  }
+
+  async getUserFavoriteOpportunities(userId: number): Promise<FavoriteOpportunity[]> {
+    return Array.from(this.favoriteOpportunities.values()).filter(
+      fav => fav.userId === userId
+    );
+  }
+
+  async addFavoriteOpportunity(userId: number, opportunityId: number): Promise<FavoriteOpportunity> {
+    const id = this.currentFavoriteOpportunityId++;
+    const newFavorite: FavoriteOpportunity = {
+      id,
+      userId,
+      opportunityId,
+      createdAt: new Date(),
+    };
+    this.favoriteOpportunities.set(id, newFavorite);
+    return newFavorite;
+  }
+
+  async removeFavoriteOpportunity(userId: number, opportunityId: number): Promise<void> {
+    const favoriteToRemove = Array.from(this.favoriteOpportunities.entries()).find(
+      ([_, fav]) => fav.userId === userId && fav.opportunityId === opportunityId
+    );
+    if (favoriteToRemove) {
+      this.favoriteOpportunities.delete(favoriteToRemove[0]);
+    }
+  }
+
+  async isFavoriteOpportunity(userId: number, opportunityId: number): Promise<boolean> {
+    return Array.from(this.favoriteOpportunities.values()).some(
+      fav => fav.userId === userId && fav.opportunityId === opportunityId
     );
   }
 }

@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, TrendingUp, TrendingDown, Activity, Target, Trash2, BarChart3 } from "lucide-react";
+import { Star, TrendingUp, TrendingDown, Activity, Target, Trash2, BarChart3, ArrowUp, ArrowDown } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useFavoriteOpportunities } from "@/hooks/useFavoriteOpportunities";
 import TokenDetailModal from "./TokenDetailModal";
 
 interface PersonalDashboardProps {
@@ -26,6 +27,9 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
     queryKey: ['/api/favorites', userId],
     queryFn: () => apiRequest('GET', `/api/favorites/${userId}`)
   });
+
+  // Fetch user's favorite opportunities
+  const { favorites: favoriteOpportunities } = useFavoriteOpportunities(userId);
 
   // Remove favorite mutation
   const removeFavoriteMutation = useMutation({
@@ -185,8 +189,8 @@ export default function PersonalDashboard({ marketData }: PersonalDashboardProps
       ) : (
         <Tabs defaultValue="watchlist" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-slate-900/80">
-            <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
-            <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
+            <TabsTrigger value="watchlist">Starred Tokens</TabsTrigger>
+            <TabsTrigger value="opportunities">Starred Trades</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 

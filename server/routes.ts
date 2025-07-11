@@ -79,6 +79,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/cryptocurrencies', async (req, res) => {
     try {
       const cryptocurrencies = await storage.getAllCryptocurrencies();
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json(cryptocurrencies);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch cryptocurrencies' });
@@ -131,6 +134,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/opportunities', async (req, res) => {
     try {
       const opportunities = await storage.getActiveOpportunities();
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json(opportunities);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch opportunities' });
@@ -383,13 +389,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   })();
 
-  // Auto-refresh market data every 10 minutes
+  // Auto-refresh market data every 2 minutes for accurate tracking
   setInterval(async () => {
     try {
       console.log('Auto-refreshing market data...');
       const marketData = await cryptoService.getAllMarketData();
       
-      for (const coinData of marketData.slice(0, 250)) { // Process top 250 coins
+      for (const coinData of marketData.slice(0, 500)) { // Process top 500 coins
         const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
         await storage.upsertCryptocurrency(cryptocurrency);
       }
@@ -398,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Auto-refresh error:', error);
     }
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 2 * 60 * 1000); // 2 minutes for real-time accuracy
 
   // Favorites routes
   app.get('/api/favorites/:userId', async (req, res) => {
@@ -458,6 +464,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error checking favorite:', error);
       res.status(500).json({ error: 'Failed to check favorite status' });
+    }
+  });
+
+  // Favorite opportunities routes
+  app.get('/api/favorite-opportunities/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const favorites = await storage.getUserFavoriteOpportunities(userId);
+      
+      // Get full opportunity data for favorites
+      const opportunities = await storage.getAllTradingOpportunities();
+      const favoriteOpportunities = favorites.map(favorite => {
+        const opportunity = opportunities.find(o => o.id === favorite.opportunityId);
+        return opportunity ? { ...opportunity, favoriteId: favorite.id } : null;
+      }).filter(Boolean);
+      
+      res.json(favoriteOpportunities);
+    } catch (error) {
+      console.error('Error fetching favorite opportunities:', error);
+      res.status(500).json({ error: 'Failed to fetch favorite opportunities' });
+    }
+  });
+
+  app.post('/api/favorite-opportunities', async (req, res) => {
+    try {
+      const { userId, opportunityId } = req.body;
+      if (!userId || !opportunityId) {
+        return res.status(400).json({ error: 'userId and opportunityId are required' });
+      }
+      
+      const favorite = await storage.addFavoriteOpportunity(userId, opportunityId);
+      res.json(favorite);
+    } catch (error) {
+      console.error('Error adding favorite opportunity:', error);
+      res.status(500).json({ error: 'Failed to add favorite opportunity' });
+    }
+  });
+
+  app.delete('/api/favorite-opportunities/:userId/:opportunityId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const opportunityId = parseInt(req.params.opportunityId);
+      
+      await storage.removeFavoriteOpportunity(userId, opportunityId);
+      res.json({ message: 'Favorite opportunity removed successfully' });
+    } catch (error) {
+      console.error('Error removing favorite opportunity:', error);
+      res.status(500).json({ error: 'Failed to remove favorite opportunity' });
     }
   });
 
