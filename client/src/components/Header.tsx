@@ -73,6 +73,14 @@ export default function Header({ isConnected, lastUpdate, onRefresh }: HeaderPro
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
+            onClick={onRefresh}
+            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Refresh Data
+          </Button>
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleSettings}
             className="border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/10"

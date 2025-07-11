@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get price history for a token with fallback to generated data
+  // Get price history for a token using real CoinGecko data
   app.get('/api/price-history/:symbol/:timeframe', async (req, res) => {
     try {
       const { symbol, timeframe } = req.params;
@@ -173,73 +173,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Cryptocurrency not found' });
       }
 
-      // Calculate timeframe details
-      let points = 100;
-      let startTime: Date;
-      const now = new Date();
-      
+      // Calculate days for CoinGecko API
+      let days = 1;
       switch (timeframe) {
         case '1d':
-          startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          points = 24;
+          days = 1;
           break;
         case '1m':
-          startTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          points = 30;
+          days = 30;
           break;
         case '1y':
-          startTime = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-          points = 365;
+          days = 365;
           break;
         case '5y':
-          startTime = new Date(now.getTime() - 5 * 365 * 24 * 60 * 60 * 1000);
-          points = 5 * 52; // Weekly points
+          days = 365 * 5;
           break;
         case 'max':
-          // Use deployment year from metadata
-          const deployedYear = crypto.metadata?.deployedYear || 2020;
-          startTime = new Date(deployedYear, 0, 1);
-          const yearsSince = now.getFullYear() - deployedYear;
-          points = Math.max(yearsSince * 52, 100); // Weekly points since deployment
+          days = 'max';
           break;
         default:
-          startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          points = 24;
+          days = 1;
       }
 
-      // Generate realistic price history
+      // Try to get real price history from CoinGecko
+      if (crypto.coinGeckoId) {
+        try {
+          const priceData = await cryptoService.getPriceHistory(crypto.coinGeckoId, days);
+          
+          if (priceData && priceData.prices && priceData.prices.length > 0) {
+            // Transform CoinGecko data to our format
+            const transformedData = priceData.prices.map((price: [number, number]) => ({
+              timestamp: new Date(price[0]).toISOString(),
+              price: price[1]
+            }));
+            
+            return res.json(transformedData);
+          }
+        } catch (apiError) {
+          console.log(`CoinGecko API error for ${symbol}:`, apiError);
+        }
+      }
+
+      // If real data is not available, show current price only
       const currentPrice = parseFloat(crypto.currentPrice);
-      const change24h = parseFloat(crypto.priceChangePercentage24h || '0');
-      const priceHistory: Array<{ timestamp: string; price: number }> = [];
-
-      for (let i = 0; i < points; i++) {
-        const timeRatio = i / (points - 1);
-        const timestamp = new Date(startTime.getTime() + timeRatio * (now.getTime() - startTime.getTime()));
-        
-        // Create realistic price movements
-        const volatility = crypto.tier === 'micro' ? 0.15 : crypto.tier === 'small' ? 0.08 : 0.04;
-        const trend = change24h / 100;
-        
-        // Simulate market cycles and volatility
-        const cycleComponent = Math.sin(timeRatio * Math.PI * 4) * 0.1;
-        const randomComponent = (Math.random() - 0.5) * volatility;
-        const trendComponent = trend * timeRatio;
-        
-        const priceMultiplier = 1 + trendComponent + cycleComponent + randomComponent;
-        const price = currentPrice * priceMultiplier;
-        
-        priceHistory.push({
-          timestamp: timestamp.toISOString(),
-          price: Math.max(price, 0.000001) // Ensure positive prices
-        });
-      }
-
-      // Ensure the last price matches current price
-      if (priceHistory.length > 0) {
-        priceHistory[priceHistory.length - 1].price = currentPrice;
-      }
-
-      res.json(priceHistory);
+      const now = new Date();
+      
+      res.json([{
+        timestamp: now.toISOString(),
+        price: currentPrice
+      }]);
+      
     } catch (error) {
       console.error('Error fetching price history:', error);
       res.status(500).json({ error: 'Failed to fetch price history' });
@@ -248,13 +231,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/market/refresh', async (req, res) => {
     try {
-      console.log('Refreshing market data...');
+      console.log('Manual market data refresh requested...');
       const marketData = await cryptoService.getAllMarketData();
       
+      console.log(`Processing ${marketData.length} coins from CoinGecko...`);
+      
       // Update database with fresh data
-      for (const coinData of marketData) {
-        const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
-        await storage.upsertCryptocurrency(cryptocurrency);
+      let updatedCount = 0;
+      for (const coinData of marketData.slice(0, 250)) { // Top 250 coins
+        try {
+          const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
+          await storage.upsertCryptocurrency(cryptocurrency);
+          updatedCount++;
+        } catch (error) {
+          console.error(`Error updating ${coinData.symbol}:`, error);
+        }
       }
       
       // Analyze new opportunities
@@ -262,18 +253,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const opportunities = await opportunityService.analyzeOpportunities(cryptocurrencies);
       
       // Store new opportunities
+      let opportunityCount = 0;
       for (const opportunity of opportunities) {
-        await storage.createTradingOpportunity(opportunity);
+        try {
+          await storage.createTradingOpportunity(opportunity);
+          opportunityCount++;
+        } catch (error) {
+          console.error('Error creating opportunity:', error);
+        }
       }
       
       res.json({ 
         message: 'Market data refreshed successfully',
-        cryptocurrencies: marketData.length,
-        opportunities: opportunities.length 
+        cryptocurrencies: updatedCount,
+        opportunities: opportunityCount,
+        totalFetched: marketData.length
       });
     } catch (error) {
       console.error('Error refreshing market data:', error);
-      res.status(500).json({ error: 'Failed to refresh market data' });
+      res.status(500).json({ error: `Failed to refresh market data: ${error.message}` });
     }
   });
 
@@ -365,20 +363,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Math.round(avgVolatility * 10); // Scale to 0-100
   }
 
-  // Auto-refresh market data every 5 minutes
+  // Force initial market data refresh on startup
+  (async () => {
+    try {
+      console.log('Initial market data refresh...');
+      const marketData = await cryptoService.getAllMarketData();
+      
+      console.log(`Fetched ${marketData.length} coins from CoinGecko`);
+      
+      for (const coinData of marketData.slice(0, 250)) { // Process top 250 coins
+        const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
+        await storage.upsertCryptocurrency(cryptocurrency);
+      }
+      
+      console.log('Initial market data refresh completed');
+    } catch (error) {
+      console.error('Initial refresh error:', error);
+      console.log('Continuing with demo data...');
+    }
+  })();
+
+  // Auto-refresh market data every 10 minutes
   setInterval(async () => {
     try {
       console.log('Auto-refreshing market data...');
       const marketData = await cryptoService.getAllMarketData();
       
-      for (const coinData of marketData.slice(0, 500)) { // Expanded token processing
+      for (const coinData of marketData.slice(0, 250)) { // Process top 250 coins
         const cryptocurrency = cryptoService.transformToInsertCryptocurrency(coinData);
         await storage.upsertCryptocurrency(cryptocurrency);
       }
+      
+      console.log('Auto-refresh completed');
     } catch (error) {
       console.error('Auto-refresh error:', error);
     }
-  }, 5 * 60 * 1000); // 5 minutes
+  }, 10 * 60 * 1000); // 10 minutes
 
   // Favorites routes
   app.get('/api/favorites/:userId', async (req, res) => {
